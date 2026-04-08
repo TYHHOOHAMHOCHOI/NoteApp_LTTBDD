@@ -12,6 +12,9 @@ class AddNoteActivity : AppCompatActivity() {
     private lateinit var etNoteContent: EditText
     private lateinit var btnSaveNote: Button
     private lateinit var databaseHelper: DatabaseHelper
+    
+    // Biến để lưu ID, mặc định -1 nghĩa là Đang Thêm Mới
+    private var currentNoteId: Long = -1L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,21 +26,42 @@ class AddNoteActivity : AppCompatActivity() {
         etNoteContent = findViewById(R.id.etNoteContent)
         btnSaveNote = findViewById(R.id.btnSaveNote)
 
+        // KIỂM TRA: Có phải đang mở để CHỈNH SỬA không?
+        if (intent.hasExtra("EXTRA_NOTE_ID")) {
+            currentNoteId = intent.getLongExtra("EXTRA_NOTE_ID", -1L)
+            etNoteTitle.setText(intent.getStringExtra("EXTRA_NOTE_TITLE"))
+            etNoteContent.setText(intent.getStringExtra("EXTRA_NOTE_CONTENT"))
+            btnSaveNote.text = "CẬP NHẬT GHI CHÚ"
+        }
+
         btnSaveNote.setOnClickListener {
             val title = etNoteTitle.text.toString().trim()
             val content = etNoteContent.text.toString().trim()
 
-            if (title.isEmpty() && content.isEmpty()) {
-                Toast.makeText(this, "Vui lòng nhập nội dung!", Toast.LENGTH_SHORT).show()
+            // Bắt buộc nhập cả hai
+            if (title.isEmpty() || content.isEmpty()) {
+                Toast.makeText(this, "Vui lòng nhập đủ thông tin!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            val id = databaseHelper.insertNote(title, content)
-            if (id > -1) {
-                Toast.makeText(this, "Đã lưu ghi chú", Toast.LENGTH_SHORT).show()
-                finish() // Đóng activity và trở về màn hình chính
+            if (currentNoteId == -1L) {
+                // ĐANG LƯU MỚI
+                val id = databaseHelper.insertNote(title, content)
+                if (id > -1) {
+                    Toast.makeText(this, "Đã lưu ghi chú", Toast.LENGTH_SHORT).show()
+                    finish()
+                } else {
+                    Toast.makeText(this, "Lỗi khi lưu!", Toast.LENGTH_SHORT).show()
+                }
             } else {
-                Toast.makeText(this, "Lỗi khi lưu!", Toast.LENGTH_SHORT).show()
+                // ĐANG CẬP NHẬT (SỬA)
+                val rows = databaseHelper.updateNote(currentNoteId, title, content)
+                if (rows > 0) {
+                    Toast.makeText(this, "Đã cập nhật", Toast.LENGTH_SHORT).show()
+                    finish()
+                } else {
+                    Toast.makeText(this, "Lỗi khi cập nhật!", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

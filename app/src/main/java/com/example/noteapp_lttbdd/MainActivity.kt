@@ -38,8 +38,14 @@ class MainActivity : AppCompatActivity() {
         fabAddNote = findViewById(R.id.fabAddNote)
 
         rvNotes.layoutManager = LinearLayoutManager(this)
-        noteAdapter = NoteAdapter(noteList)
-        rvNotes.adapter = noteAdapter
+    noteAdapter = NoteAdapter(noteList) { selectedNote ->
+    val intent = Intent(this, AddNoteActivity::class.java)
+    intent.putExtra("EXTRA_NOTE_ID", selectedNote.id)
+    intent.putExtra("EXTRA_NOTE_TITLE", selectedNote.title)
+    intent.putExtra("EXTRA_NOTE_CONTENT", selectedNote.content)
+    startActivity(intent)
+}
+rvNotes.adapter = noteAdapter
 
         fabAddNote.setOnClickListener {
             val intent = Intent(this, AddNoteActivity::class.java)

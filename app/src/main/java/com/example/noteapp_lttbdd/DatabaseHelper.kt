@@ -41,6 +41,17 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return id
     }
 
+    fun updateNote(id: Long, title: String, content: String): Int {
+    val db = this.writableDatabase
+    val contentValues = ContentValues().apply {
+        put(COLUMN_TITLE, title)
+        put(COLUMN_CONTENT, content)
+    }
+    val success = db.update(TABLE_NOTES, contentValues, "$COLUMN_ID=?", arrayOf(id.toString()))
+    db.close()
+    return success
+    }
+
     fun getAllNotes(): List<Note> {
         val noteList = mutableListOf<Note>()
         val selectQuery = "SELECT * FROM $TABLE_NOTES ORDER BY $COLUMN_ID DESC"
