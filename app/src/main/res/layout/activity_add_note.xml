@@ -1,50 +1,84 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FFFFFF"
     android:orientation="vertical"
-    android:padding="24dp"
-    android:background="#FFFFFF">
+    android:padding="24dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Thêm ghi chú mới"
-        android:textSize="24sp"
-        android:textStyle="bold"
         android:layout_marginBottom="24dp"
-        android:textColor="#212121"/>
+        android:text="Thêm ghi chú"
+        android:textColor="#212121"
+        android:textSize="24sp"
+        android:textStyle="bold" />
 
     <EditText
         android:id="@+id/etNoteTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:background="#F5F5F5"
         android:hint="Tiêu đề"
         android:inputType="text"
         android:padding="12dp"
-        android:background="#F5F5F5"
-        android:layout_marginBottom="16dp"
-        android:textSize="18sp"/>
+        android:textSize="18sp" />
 
     <EditText
         android:id="@+id/etNoteContent"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:hint="Nội dung ghi chú..."
+        android:background="#F5F5F5"
         android:gravity="top|start"
+        android:hint="Nội dung ghi chú..."
         android:inputType="textMultiLine"
         android:padding="12dp"
-        android:background="#F5F5F5"
-        android:layout_marginBottom="24dp"
-        android:textSize="16sp"/>
+        android:textSize="16sp" />
 
-    <Button
-        android:id="@+id/btnSaveNote"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:text="LƯU GHI CHÚ"
-        android:textSize="16sp"
-        android:textStyle="bold" />
+        android:layout_height="64dp"
+        android:layout_marginTop="16dp"
+        android:background="#F5F5F5"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingHorizontal="8dp">
+
+        <ImageButton
+            android:id="@+id/btnAddInNote"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="Add in note"
+            android:padding="14dp"
+            android:src="@drawable/ic_add_in_note"
+            android:tint="#212121" />
+
+        <ImageButton
+            android:id="@+id/btnAlign"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="Align options"
+            android:padding="14dp"
+            android:src="@drawable/ic_align"
+            android:tint="#212121" />
+
+        <ImageButton
+            android:id="@+id/btnTextSetting"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="Text settings"
+            android:padding="14dp"
+            android:src="@drawable/ic_text_setting"
+            android:tint="#212121" />
+    </LinearLayout>
 
 </LinearLayout>
