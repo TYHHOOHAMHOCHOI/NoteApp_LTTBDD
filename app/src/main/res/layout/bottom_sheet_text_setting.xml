@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#FFFFFF"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <View
+        android:layout_width="48dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:background="#D0D0D0"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Định dạng"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:layout_marginBottom="12dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:baselineAligned="false">
+
+        <LinearLayout
+            android:id="@+id/btnFormatBold"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackground"
+            android:padding="8dp"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_format_bold"
+                android:contentDescription="Bold"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="In đậm"
+                android:textSize="12sp"
+                android:textColor="#333333"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnFormatItalic"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackground"
+            android:padding="8dp"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_format_italic"
+                android:contentDescription="Italic"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="In nghiêng"
+                android:textSize="12sp"
+                android:textColor="#333333" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnFormatUnderline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackground"
+            android:padding="8dp"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_format_underline"
+                android:contentDescription="Underline"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Gạch chân"
+                android:textSize="12sp"
+                android:textColor="#333333" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#EEEEEE"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cỡ chữ"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:layout_marginBottom="12dp" />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+
+        <!-- Thay vì include từng cái, ta có thể fix cứng hoặc dùng code add vào, nhưng cho nhanh cứ fix cứng -->
+        <LinearLayout
+            android:id="@+id/llTextSizeContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="8dp">
+
+            <TextView android:tag="10" android:text="10" android:gravity="center" android:layout_width="48dp" android:layout_height="48dp" android:background="#F0F0F0" android:layout_marginEnd="8dp" android:textSize="14sp" android:textColor="#333333" />
+            <TextView android:tag="12" android:text="12" android:gravity="center" android:layout_width="48dp" android:layout_height="48dp" android:background="#F0F0F0" android:layout_marginEnd="8dp" android:textSize="14sp" android:textColor="#333333" />
+            <TextView android:tag="14" android:text="14" android:gravity="center" android:layout_width="48dp" android:layout_height="48dp" android:background="#F0F0F0" android:layout_marginEnd="8dp" android:textSize="14sp" android:textColor="#333333" />
+            <TextView android:tag="16" android:text="16" android:gravity="center" android:layout_width="48dp" android:layout_height="48dp" android:background="#F0F0F0" android:layout_marginEnd="8dp" android:textSize="14sp" android:textColor="#333333" />
+            <TextView android:tag="24" android:text="24" android:gravity="center" android:layout_width="48dp" android:layout_height="48dp" android:background="#F0F0F0" android:layout_marginEnd="8dp" android:textSize="14sp" android:textColor="#333333" />
+            <TextView android:tag="36" android:text="36" android:gravity="center" android:layout_width="48dp" android:layout_height="48dp" android:background="#F0F0F0" android:layout_marginEnd="8dp" android:textSize="14sp" android:textColor="#333333" />
+            <TextView android:tag="48" android:text="48" android:gravity="center" android:layout_width="48dp" android:layout_height="48dp" android:background="#F0F0F0" android:layout_marginEnd="8dp" android:textSize="14sp" android:textColor="#333333" />
+            <TextView android:tag="64" android:text="64" android:gravity="center" android:layout_width="48dp" android:layout_height="48dp" android:background="#F0F0F0" android:layout_marginEnd="8dp" android:textSize="14sp" android:textColor="#333333" />
+            <TextView android:tag="72" android:text="72" android:gravity="center" android:layout_width="48dp" android:layout_height="48dp" android:background="#F0F0F0" android:layout_marginEnd="8dp" android:textSize="14sp" android:textColor="#333333" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+</LinearLayout>
