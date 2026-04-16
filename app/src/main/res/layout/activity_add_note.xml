@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
+    android:background="@color/bg_color"
     android:orientation="vertical"
     android:padding="24dp">
 
@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
         android:text="Thêm ghi chú"
-        android:textColor="#212121"
+        android:textColor="@color/text_primary"
         android:textSize="24sp"
         android:textStyle="bold" />
 
@@ -20,8 +20,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:background="#F5F5F5"
+        android:background="@color/card_color"
         android:hint="Tiêu đề"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_secondary"
         android:inputType="text"
         android:padding="12dp"
         android:textSize="18sp" />
@@ -31,9 +33,11 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="#F5F5F5"
+        android:background="@color/card_color"
         android:gravity="top|start"
         android:hint="Nội dung ghi chú..."
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_secondary"
         android:inputType="textMultiLine"
         android:padding="12dp"
         android:textSize="16sp" />
@@ -42,7 +46,7 @@
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:layout_marginTop="16dp"
-        android:background="#F5F5F5"
+        android:background="@color/card_color"
         android:gravity="center"
         android:orientation="horizontal"
         android:paddingHorizontal="8dp">
@@ -56,7 +60,7 @@
             android:contentDescription="Add in note"
             android:padding="14dp"
             android:src="@drawable/ic_add_in_note"
-            android:tint="#212121" />
+            android:tint="@color/text_primary" />
 
         <ImageButton
             android:id="@+id/btnAlign"
@@ -67,7 +71,7 @@
             android:contentDescription="Align options"
             android:padding="14dp"
             android:src="@drawable/ic_align"
-            android:tint="#212121" />
+            android:tint="@color/text_primary" />
 
         <ImageButton
             android:id="@+id/btnTextSetting"
@@ -78,7 +82,7 @@
             android:contentDescription="Text settings"
             android:padding="14dp"
             android:src="@drawable/ic_text_setting"
-            android:tint="#212121" />
+            android:tint="@color/text_primary" />
     </LinearLayout>
 
 </LinearLayout>

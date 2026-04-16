@@ -1,7 +1,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.NoteApp_LTTBDD" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+
+    <style name="Theme.NoteApp_LTTBDD" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <!-- Override nếu cần -->
+        <item name="android:colorBackground">@color/bg_color</item>
+
     </style>
+
 </resources>

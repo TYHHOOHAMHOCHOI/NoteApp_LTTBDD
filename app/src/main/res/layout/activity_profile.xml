@@ -6,7 +6,7 @@
     android:id="@+id/profile_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
+    android:background="@color/bg_color"
     tools:context=".ProfileActivity">
 
     <ImageView
@@ -15,6 +15,7 @@
         android:layout_height="120dp"
         android:layout_marginTop="64dp"
         android:src="@android:drawable/ic_menu_gallery"
+        app:tint="@color/primary"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -27,7 +28,7 @@
         android:text="User Name"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:textColor="@android:color/black"
+        android:textColor="@color/text_primary"
         app:layout_constraintTop_toBottomOf="@id/ivProfilePicture"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -39,7 +40,7 @@
         android:layout_marginTop="8dp"
         android:text="user@example.com"
         android:textSize="16sp"
-        android:textColor="#757575"
+        android:textColor="@color/text_secondary"
         app:layout_constraintTop_toBottomOf="@id/tvUsername"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -51,7 +52,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:orientation="vertical"
-        android:background="@android:color/white"
+        android:background="@color/card_color"
         app:layout_constraintTop_toBottomOf="@id/tvEmail"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -71,7 +72,8 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@android:drawable/ic_menu_preferences" />
+                android:src="@android:drawable/ic_menu_preferences"
+                app:tint="@color/text_primary" />
 
             <TextView
                 android:layout_width="0dp"
@@ -80,12 +82,13 @@
                 android:layout_weight="1"
                 android:text="Cài đặt"
                 android:textSize="16sp"
-                android:textColor="@android:color/black"/>
+                android:textColor="@color/text_primary"/>
 
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@android:drawable/ic_media_next" />
+                android:src="@android:drawable/ic_media_next"
+                app:tint="@color/text_secondary" />
         </LinearLayout>
 
     </LinearLayout>
@@ -95,10 +98,12 @@
         android:id="@+id/bottom_navigation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="?android:attr/windowBackground"
-        app:menu="@menu/bottom_nav_menu"
+        android:background="@color/bg_color"
+        app:itemIconTint="@color/primary"
+        app:itemTextColor="@color/primary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
