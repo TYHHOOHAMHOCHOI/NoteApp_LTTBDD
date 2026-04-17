@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Background -->
-    <color name="bg_color">#FFFFFF</color>
-    <color name="card_color">#F5F5F5</color>
+    <color name="bg_color">#F5F5F5</color>
+    <color name="card_color">#FFFFFF</color>
 
     <!-- Text -->
     <color name="text_primary">#000000</color>
