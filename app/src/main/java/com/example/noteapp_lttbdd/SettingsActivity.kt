@@ -1,10 +1,12 @@
 package com.example.noteapp_lttbdd
 
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.*
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SwitchCompat
@@ -42,16 +44,12 @@ class SettingsActivity : AppCompatActivity() {
         val isDarkMode = pref.getBoolean("dark_mode", false)
         switchDarkMode.isChecked = isDarkMode
 
-        // Tapping the whole item also toggles the switch
         findViewById<View>(R.id.itemDarkMode).setOnClickListener {
             switchDarkMode.isChecked = !switchDarkMode.isChecked
         }
 
         switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
-            // Lưu trạng thái
             pref.edit().putBoolean("dark_mode", isChecked).apply()
-
-            // Áp dụng theme
             AppCompatDelegate.setDefaultNightMode(
                 if (isChecked)
                     AppCompatDelegate.MODE_NIGHT_YES
@@ -60,7 +58,7 @@ class SettingsActivity : AppCompatActivity() {
             )
         }
 
-        // Setup other items with placeholders/toasts
+        // Setup other items
         findViewById<View>(R.id.itemTheme).setOnClickListener {
             Toast.makeText(this, "Chủ đề - Sắp ra mắt", Toast.LENGTH_SHORT).show()
         }
@@ -70,11 +68,42 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<View>(R.id.itemAppLock).setOnClickListener {
             Toast.makeText(this, "Khóa ứng dụng - Sắp ra mắt", Toast.LENGTH_SHORT).show()
         }
+        
+        // 🔥 Navigate to LockNotesActivity
         findViewById<View>(R.id.itemNoteLock).setOnClickListener {
-            Toast.makeText(this, "Khóa ghi chú - Sắp ra mắt", Toast.LENGTH_SHORT).show()
+            val savedPassword = pref.getString("note_password", "")
+            if (savedPassword.isNullOrEmpty()) {
+                // If no password set, go directly to set one
+                startActivity(Intent(this, LockNotesActivity::class.java))
+            } else {
+                showVerifyPasswordDialog()
+            }
         }
+
         findViewById<View>(R.id.itemLanguage).setOnClickListener {
             Toast.makeText(this, "Ngôn ngữ - Tiếng Việt", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun showVerifyPasswordDialog() {
+        val editText = EditText(this)
+        editText.inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+        editText.hint = "Nhập mật khẩu hiện tại"
+
+        AlertDialog.Builder(this)
+            .setTitle("Xác thực")
+            .setMessage("Vui lòng nhập mật khẩu để truy cập cài đặt khóa ghi chú")
+            .setView(editText)
+            .setPositiveButton("Xác nhận") { _, _ ->
+                val input = editText.text.toString()
+                val savedPassword = pref.getString("note_password", "")
+                if (input == savedPassword) {
+                    startActivity(Intent(this, LockNotesActivity::class.java))
+                } else {
+                    Toast.makeText(this, "Mật khẩu không chính xác", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Hủy", null)
+            .show()
     }
 }

@@ -8,7 +8,9 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
@@ -22,7 +24,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var rvNotes: RecyclerView
     private lateinit var tvEmpty: TextView
-    private lateinit var etSearch: EditText // Khai báo biến cho ô tìm kiếm
+    private lateinit var etSearch: EditText
     private lateinit var fabAddNote: FloatingActionButton
     private lateinit var bottomNavigation: BottomNavigationView
     private lateinit var noteAdapter: NoteAdapter
@@ -32,8 +34,6 @@ class MainActivity : AppCompatActivity() {
     private var noteList: List<Note> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
-        // 🔥 ÁP DỤNG DARK MODE TRƯỚC KHI LOAD UI
         sharedPref = getSharedPreferences("settings", MODE_PRIVATE)
         val isDarkMode = sharedPref.getBoolean("dark_mode", false)
 
@@ -47,7 +47,6 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        // Edge-to-edge
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
@@ -58,31 +57,33 @@ class MainActivity : AppCompatActivity() {
 
         rvNotes = findViewById(R.id.rvNotes)
         tvEmpty = findViewById(R.id.tvEmpty)
-        etSearch = findViewById(R.id.etSearch) // Ánh xạ UI
+        etSearch = findViewById(R.id.etSearch)
         fabAddNote = findViewById(R.id.fabAddNote)
         bottomNavigation = findViewById(R.id.bottom_navigation)
 
-        // Cài đặt trình lắng nghe khi người dùng nhập Text để tìm kiếm
         etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // Gọi hàm lọc danh sách dựa trên từ khóa người dùng nhập vào
                 filterNotes(s.toString())
             }
-
             override fun afterTextChanged(s: Editable?) {}
         })
 
         rvNotes.layoutManager = LinearLayoutManager(this)
 
-        noteAdapter = NoteAdapter(noteList) { selectedNote ->
-            val intent = Intent(this, AddNoteActivity::class.java)
-            intent.putExtra("EXTRA_NOTE_ID", selectedNote.id)
-            intent.putExtra("EXTRA_NOTE_TITLE", selectedNote.title)
-            intent.putExtra("EXTRA_NOTE_CONTENT", selectedNote.content)
-            startActivity(intent)
-        }
+        noteAdapter = NoteAdapter(
+            noteList,
+            onItemClick = { selectedNote ->
+                if (selectedNote.isLocked) {
+                    showUnlockToViewDialog(selectedNote)
+                } else {
+                    openNote(selectedNote)
+                }
+            },
+            onItemLongClick = { selectedNote, view ->
+                showNoteOptions(selectedNote, view)
+            }
+        )
 
         rvNotes.adapter = noteAdapter
 
@@ -94,12 +95,97 @@ class MainActivity : AppCompatActivity() {
         setupBottomNavigation()
     }
 
+    private fun openNote(note: Note) {
+        val intent = Intent(this, AddNoteActivity::class.java)
+        intent.putExtra("EXTRA_NOTE_ID", note.id)
+        intent.putExtra("EXTRA_NOTE_TITLE", note.title)
+        intent.putExtra("EXTRA_NOTE_CONTENT", note.content)
+        startActivity(intent)
+    }
+
+    private fun showUnlockToViewDialog(note: Note) {
+        val editText = EditText(this)
+        editText.inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+        
+        AlertDialog.Builder(this)
+            .setTitle("Nhập mật khẩu để xem ghi chú")
+            .setView(editText)
+            .setPositiveButton("Mở") { _, _ ->
+                val input = editText.text.toString()
+                val savedPassword = sharedPref.getString("note_password", "")
+                if (input == savedPassword) {
+                    openNote(note)
+                } else {
+                    Toast.makeText(this, "Mật khẩu không chính xác", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Hủy", null)
+            .show()
+    }
+
+    private fun showNoteOptions(note: Note, view: View) {
+        val options = if (note.isLocked) {
+            arrayOf("Xóa", "Mở khóa ghi chú")
+        } else {
+            arrayOf("Xóa", "Khóa ghi chú")
+        }
+
+        AlertDialog.Builder(this)
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> { // Delete
+                        databaseHelper.deleteNote(note.id)
+                        loadNotes()
+                        Toast.makeText(this, "Đã xóa ghi chú", Toast.LENGTH_SHORT).show()
+                    }
+                    1 -> { // Lock/Unlock
+                        if (note.isLocked) {
+                            showVerifyPasswordToUnlock(note)
+                        } else {
+                            val savedPassword = sharedPref.getString("note_password", "")
+                            if (savedPassword.isNullOrEmpty()) {
+                                Toast.makeText(this, "Bạn chưa thiết lập mật khẩu trong Cài đặt", Toast.LENGTH_SHORT).show()
+                            } else {
+                                databaseHelper.updateLockStatus(note.id, true)
+                                loadNotes()
+                                Toast.makeText(this, "Ghi chú đã bị khóa", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+            }
+            .show()
+    }
+
+    private fun showVerifyPasswordToUnlock(note: Note) {
+        val editText = EditText(this)
+        editText.inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+        editText.hint = "Nhập mật khẩu"
+
+        AlertDialog.Builder(this)
+            .setTitle("Xác thực")
+            .setMessage("Vui lòng nhập mật khẩu để mở khóa ghi chú này")
+            .setView(editText)
+            .setPositiveButton("Xác nhận") { _, _ ->
+                val input = editText.text.toString()
+                val savedPassword = sharedPref.getString("note_password", "")
+                if (input == savedPassword) {
+                    databaseHelper.updateLockStatus(note.id, false)
+                    loadNotes()
+                    Toast.makeText(this, "Đã mở khóa ghi chú", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Mật khẩu không chính xác", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Hủy", null)
+            .show()
+    }
+
     private fun setupBottomNavigation() {
         bottomNavigation.selectedItemId = R.id.navigation_home
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_home -> true
-
                 R.id.navigation_profile -> {
                     val intent = Intent(this, ProfileActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
@@ -107,7 +193,6 @@ class MainActivity : AppCompatActivity() {
                     overridePendingTransition(0, 0)
                     true
                 }
-
                 else -> false
             }
         }
@@ -121,14 +206,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadNotes() {
         noteList = databaseHelper.getAllNotes()
-        
-        // Cập nhật lại danh sách tùy vào việc có đang tìm kiếm hay không
         val currentQuery = etSearch.text.toString()
         if (currentQuery.isNotEmpty()) {
             filterNotes(currentQuery)
         } else {
             noteAdapter.updateData(noteList)
-
             if (noteList.isEmpty()) {
                 tvEmpty.visibility = View.VISIBLE
                 tvEmpty.text = "Chưa có ghi chú nào"
@@ -140,17 +222,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Hàm lọc các ghi chú dựa theo tiêu đề hoặc nội dung
     private fun filterNotes(query: String) {
         val filteredList = noteList.filter { note ->
             note.title.contains(query, ignoreCase = true) || 
             note.content.contains(query, ignoreCase = true)
         }
-        
-        // Cập nhật lại RecyclerView với danh sách đã lọc
         noteAdapter.updateData(filteredList)
-
-        // Kiểm tra nếu không có kết quả hợp lệ thì hiển thị thông báo
         if (filteredList.isEmpty()) {
             tvEmpty.visibility = View.VISIBLE
             tvEmpty.text = "Không tìm thấy kết quả"

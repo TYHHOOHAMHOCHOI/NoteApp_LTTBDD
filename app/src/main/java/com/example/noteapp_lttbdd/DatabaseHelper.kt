@@ -9,25 +9,28 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "notes_db"
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 2 // Tăng version để trigger onUpgrade
         private const val TABLE_NOTES = "notes"
 
         private const val COLUMN_ID = "id"
         private const val COLUMN_TITLE = "title"
         private const val COLUMN_CONTENT = "content"
+        private const val COLUMN_IS_LOCKED = "is_locked"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
         val createTableQuery = ("CREATE TABLE $TABLE_NOTES ("
                 + "$COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + "$COLUMN_TITLE TEXT,"
-                + "$COLUMN_CONTENT TEXT)")
+                + "$COLUMN_CONTENT TEXT,"
+                + "$COLUMN_IS_LOCKED INTEGER DEFAULT 0)")
         db.execSQL(createTableQuery)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.execSQL("DROP TABLE IF EXISTS $TABLE_NOTES")
-        onCreate(db)
+        if (oldVersion < 2) {
+            db.execSQL("ALTER TABLE $TABLE_NOTES ADD COLUMN $COLUMN_IS_LOCKED INTEGER DEFAULT 0")
+        }
     }
 
     fun insertNote(title: String, content: String): Long {
@@ -35,6 +38,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         val contentValues = ContentValues().apply {
             put(COLUMN_TITLE, title)
             put(COLUMN_CONTENT, content)
+            put(COLUMN_IS_LOCKED, 0)
         }
         val id = db.insert(TABLE_NOTES, null, contentValues)
         db.close()
@@ -42,14 +46,31 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     fun updateNote(id: Long, title: String, content: String): Int {
-    val db = this.writableDatabase
-    val contentValues = ContentValues().apply {
-        put(COLUMN_TITLE, title)
-        put(COLUMN_CONTENT, content)
+        val db = this.writableDatabase
+        val contentValues = ContentValues().apply {
+            put(COLUMN_TITLE, title)
+            put(COLUMN_CONTENT, content)
+        }
+        val success = db.update(TABLE_NOTES, contentValues, "$COLUMN_ID=?", arrayOf(id.toString()))
+        db.close()
+        return success
     }
-    val success = db.update(TABLE_NOTES, contentValues, "$COLUMN_ID=?", arrayOf(id.toString()))
-    db.close()
-    return success
+
+    fun updateLockStatus(id: Long, isLocked: Boolean): Int {
+        val db = this.writableDatabase
+        val contentValues = ContentValues().apply {
+            put(COLUMN_IS_LOCKED, if (isLocked) 1 else 0)
+        }
+        val success = db.update(TABLE_NOTES, contentValues, "$COLUMN_ID=?", arrayOf(id.toString()))
+        db.close()
+        return success
+    }
+
+    fun deleteNote(id: Long): Int {
+        val db = this.writableDatabase
+        val success = db.delete(TABLE_NOTES, "$COLUMN_ID=?", arrayOf(id.toString()))
+        db.close()
+        return success
     }
 
     fun getAllNotes(): List<Note> {
@@ -63,7 +84,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 val id = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_ID))
                 val title = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE))
                 val content = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONTENT))
-                noteList.add(Note(id, title, content))
+                val isLocked = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IS_LOCKED)) == 1
+                noteList.add(Note(id, title, content, isLocked))
             } while (cursor.moveToNext())
         }
         cursor.close()
