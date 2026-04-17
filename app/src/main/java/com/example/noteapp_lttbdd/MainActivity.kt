@@ -1,6 +1,7 @@
 package com.example.noteapp_lttbdd
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -9,6 +10,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -25,15 +27,27 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bottomNavigation: BottomNavigationView
     private lateinit var noteAdapter: NoteAdapter
     private lateinit var databaseHelper: DatabaseHelper
+    private lateinit var sharedPref: SharedPreferences
+
     private var noteList: List<Note> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        // 🔥 ÁP DỤNG DARK MODE TRƯỚC KHI LOAD UI
+        sharedPref = getSharedPreferences("settings", MODE_PRIVATE)
+        val isDarkMode = sharedPref.getBoolean("dark_mode", false)
+
+        if (isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        // Xử lý edge-to-edge: Chỉ áp dụng padding cho top, left, right. 
-        // BottomNavigationView sẽ tự xử lý bottom inset.
+        // Edge-to-edge
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
@@ -85,14 +99,15 @@ class MainActivity : AppCompatActivity() {
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_home -> true
+
                 R.id.navigation_profile -> {
                     val intent = Intent(this, ProfileActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
                     startActivity(intent)
-                    // Loại bỏ hiệu ứng chuyển cảnh để mượt mà hơn như các tab
                     overridePendingTransition(0, 0)
                     true
                 }
+
                 else -> false
             }
         }
@@ -101,7 +116,6 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         loadNotes()
-        // Đảm bảo item Home được chọn khi quay lại từ các màn hình khác
         bottomNavigation.selectedItemId = R.id.navigation_home
     }
 

@@ -1,59 +1,80 @@
 package com.example.noteapp_lttbdd
 
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.View
 import android.widget.*
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.SwitchCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 
 class SettingsActivity : AppCompatActivity() {
 
+    private lateinit var switchDarkMode: SwitchCompat
+    private lateinit var pref: SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContentView(R.layout.activity_settings)
 
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
+        pref = getSharedPreferences("settings", MODE_PRIVATE)
+
         val btnBack = findViewById<ImageButton>(R.id.btnBack)
-        val cbDarkMode = findViewById<CheckBox>(R.id.cbDarkMode)
-        val spinnerLanguage = findViewById<Spinner>(R.id.spinnerLanguage)
+        switchDarkMode = findViewById(R.id.switchDarkMode)
 
         // 🔙 Back
         btnBack.setOnClickListener { finish() }
 
-        // 💾 SharedPreferences
-        val pref = getSharedPreferences("Settings", MODE_PRIVATE)
-
         // =========================
-        // 🌗 DARK MODE (FIX CHUẨN)
+        // 🌗 DARK MODE
         // =========================
-        val isDark = pref.getBoolean("DARK_MODE", false)
-        cbDarkMode.isChecked = isDark
 
-        cbDarkMode.setOnCheckedChangeListener { _, isChecked ->
-            pref.edit().putBoolean("DARK_MODE", isChecked).apply()
+        val isDarkMode = pref.getBoolean("dark_mode", false)
+        switchDarkMode.isChecked = isDarkMode
 
-            if (isChecked) {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            } else {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            }
+        // Tapping the whole item also toggles the switch
+        findViewById<View>(R.id.itemDarkMode).setOnClickListener {
+            switchDarkMode.isChecked = !switchDarkMode.isChecked
         }
 
-        // =========================
-        // 🌍 LANGUAGE (UI DEMO)
-        // =========================
-        val languages = arrayOf("Tiếng Việt", "English", "日本語")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, languages)
-        spinnerLanguage.adapter = adapter
+        switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
+            // Lưu trạng thái
+            pref.edit().putBoolean("dark_mode", isChecked).apply()
 
-        val savedLang = pref.getInt("LANG_POS", 0)
-        spinnerLanguage.setSelection(savedLang)
+            // Áp dụng theme
+            AppCompatDelegate.setDefaultNightMode(
+                if (isChecked)
+                    AppCompatDelegate.MODE_NIGHT_YES
+                else
+                    AppCompatDelegate.MODE_NIGHT_NO
+            )
+        }
 
-        spinnerLanguage.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                pref.edit().putInt("LANG_POS", position).apply()
-                Toast.makeText(this@SettingsActivity, "Đã chọn: ${languages[position]}", Toast.LENGTH_SHORT).show()
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        // Setup other items with placeholders/toasts
+        findViewById<View>(R.id.itemTheme).setOnClickListener {
+            Toast.makeText(this, "Chủ đề - Sắp ra mắt", Toast.LENGTH_SHORT).show()
+        }
+        findViewById<View>(R.id.itemAutoSave).setOnClickListener {
+            Toast.makeText(this, "Tự động lưu - Đã bật", Toast.LENGTH_SHORT).show()
+        }
+        findViewById<View>(R.id.itemAppLock).setOnClickListener {
+            Toast.makeText(this, "Khóa ứng dụng - Sắp ra mắt", Toast.LENGTH_SHORT).show()
+        }
+        findViewById<View>(R.id.itemNoteLock).setOnClickListener {
+            Toast.makeText(this, "Khóa ghi chú - Sắp ra mắt", Toast.LENGTH_SHORT).show()
+        }
+        findViewById<View>(R.id.itemLanguage).setOnClickListener {
+            Toast.makeText(this, "Ngôn ngữ - Tiếng Việt", Toast.LENGTH_SHORT).show()
         }
     }
 }
