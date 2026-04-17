@@ -23,6 +23,7 @@
         <activity android:name=".AddNoteActivity" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".SettingsActivity"/>
         <activity android:name=".ProfileActivity"/>
+        <activity android:name=".LockNotesActivity"/>
     </application>
 
 </manifest>
