@@ -1,88 +1,114 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_color"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:background="#FFFFFF"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:text="Thêm ghi chú"
-        android:textColor="@color/text_primary"
-        android:textSize="24sp"
-        android:textStyle="bold" />
-
-    <EditText
-        android:id="@+id/etNoteTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:background="@color/card_color"
-        android:hint="Tiêu đề"
-        android:textColor="@color/text_primary"
-        android:textColorHint="@color/text_secondary"
-        android:inputType="text"
-        android:padding="12dp"
-        android:textSize="18sp" />
-
-    <EditText
-        android:id="@+id/etNoteContent"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@color/card_color"
-        android:gravity="top|start"
-        android:hint="Nội dung ghi chú..."
-        android:textColor="@color/text_primary"
-        android:textColorHint="@color/text_secondary"
-        android:inputType="textMultiLine"
-        android:padding="12dp"
-        android:textSize="16sp" />
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:text="Thêm ghi chú"
+            android:textColor="#212121"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/etNoteTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:background="#F5F5F5"
+            android:hint="Tiêu đề"
+            android:inputType="text"
+            android:padding="12dp"
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/etNoteContent"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="#F5F5F5"
+            android:gravity="top|start"
+            android:hint="Nội dung ghi chú..."
+            android:inputType="textMultiLine"
+            android:padding="12dp"
+            android:textSize="16sp" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="64dp"
-        android:layout_marginTop="16dp"
-        android:background="@color/card_color"
+        android:background="#F5F5F5"
         android:gravity="center"
         android:orientation="horizontal"
-        android:paddingHorizontal="8dp">
+        android:paddingHorizontal="16dp">
 
         <ImageButton
             android:id="@+id/btnAddInNote"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@android:color/transparent"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Add in note"
             android:padding="14dp"
             android:src="@drawable/ic_add_in_note"
-            android:tint="@color/text_primary" />
+            android:tint="#212121" />
 
         <ImageButton
             android:id="@+id/btnAlign"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@android:color/transparent"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Align options"
             android:padding="14dp"
             android:src="@drawable/ic_align"
-            android:tint="@color/text_primary" />
+            android:tint="#212121" />
 
         <ImageButton
             android:id="@+id/btnTextSetting"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@android:color/transparent"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Text settings"
             android:padding="14dp"
             android:src="@drawable/ic_text_setting"
-            android:tint="@color/text_primary" />
+            android:tint="#212121" />
     </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/flPanelContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone">
+
+        <include
+            android:id="@+id/panelAlign"
+            layout="@layout/bottom_sheet_align"
+            android:visibility="gone" />
+
+        <include
+            android:id="@+id/panelTextSetting"
+            layout="@layout/bottom_sheet_text_setting"
+            android:visibility="gone" />
+            
+        <include
+            android:id="@+id/panelNoteAction"
+            layout="@layout/bottom_sheet_note_action"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
 </LinearLayout>

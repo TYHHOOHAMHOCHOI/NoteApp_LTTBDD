@@ -3,7 +3,10 @@ package com.example.noteapp_lttbdd
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
+import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -19,6 +22,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var rvNotes: RecyclerView
     private lateinit var tvEmpty: TextView
+    private lateinit var etSearch: EditText // Khai báo biến cho ô tìm kiếm
     private lateinit var fabAddNote: FloatingActionButton
     private lateinit var bottomNavigation: BottomNavigationView
     private lateinit var noteAdapter: NoteAdapter
@@ -54,8 +58,21 @@ class MainActivity : AppCompatActivity() {
 
         rvNotes = findViewById(R.id.rvNotes)
         tvEmpty = findViewById(R.id.tvEmpty)
+        etSearch = findViewById(R.id.etSearch) // Ánh xạ UI
         fabAddNote = findViewById(R.id.fabAddNote)
         bottomNavigation = findViewById(R.id.bottom_navigation)
+
+        // Cài đặt trình lắng nghe khi người dùng nhập Text để tìm kiếm
+        etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                // Gọi hàm lọc danh sách dựa trên từ khóa người dùng nhập vào
+                filterNotes(s.toString())
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
 
         rvNotes.layoutManager = LinearLayoutManager(this)
 
@@ -104,10 +121,39 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadNotes() {
         noteList = databaseHelper.getAllNotes()
-        noteAdapter.updateData(noteList)
+        
+        // Cập nhật lại danh sách tùy vào việc có đang tìm kiếm hay không
+        val currentQuery = etSearch.text.toString()
+        if (currentQuery.isNotEmpty()) {
+            filterNotes(currentQuery)
+        } else {
+            noteAdapter.updateData(noteList)
 
-        if (noteList.isEmpty()) {
+            if (noteList.isEmpty()) {
+                tvEmpty.visibility = View.VISIBLE
+                tvEmpty.text = "Chưa có ghi chú nào"
+                rvNotes.visibility = View.GONE
+            } else {
+                tvEmpty.visibility = View.GONE
+                rvNotes.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    // Hàm lọc các ghi chú dựa theo tiêu đề hoặc nội dung
+    private fun filterNotes(query: String) {
+        val filteredList = noteList.filter { note ->
+            note.title.contains(query, ignoreCase = true) || 
+            note.content.contains(query, ignoreCase = true)
+        }
+        
+        // Cập nhật lại RecyclerView với danh sách đã lọc
+        noteAdapter.updateData(filteredList)
+
+        // Kiểm tra nếu không có kết quả hợp lệ thì hiển thị thông báo
+        if (filteredList.isEmpty()) {
             tvEmpty.visibility = View.VISIBLE
+            tvEmpty.text = "Không tìm thấy kết quả"
             rvNotes.visibility = View.GONE
         } else {
             tvEmpty.visibility = View.GONE
