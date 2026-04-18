@@ -23,7 +23,7 @@
                 android:id="@+id/tvNoteTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_toStartOf="@+id/ivPinIcon" <!-- Chỉnh vị trí tiêu đề lùi về phía bên trái so với icon ghim -->
+                android:layout_toStartOf="@+id/ivPinIcon"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textStyle="bold"
