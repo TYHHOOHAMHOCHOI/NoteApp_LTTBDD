@@ -124,33 +124,53 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showNoteOptions(note: Note, view: View) {
-        val options = if (note.isLocked) {
-            arrayOf("Xóa", "Mở khóa ghi chú")
+        val optionsList = mutableListOf("Xóa")
+
+        // Thêm mục Ghim/Bỏ ghim tùy thuộc vào trạng thái
+        if (note.isPinned) {
+            optionsList.add("Bỏ ghim")
         } else {
-            arrayOf("Xóa", "Khóa ghi chú")
+            optionsList.add("Ghim ghi chú")
         }
+
+        if (note.isLocked) {
+            optionsList.add("Mở khóa ghi chú")
+        } else {
+            optionsList.add("Khóa ghi chú")
+        }
+
+        val options = optionsList.toTypedArray()
 
         AlertDialog.Builder(this)
             .setItems(options) { _, which ->
-                when (which) {
-                    0 -> { // Delete
+                when (options[which]) {
+                    "Xóa" -> {
                         databaseHelper.deleteNote(note.id)
                         loadNotes()
                         Toast.makeText(this, "Đã xóa ghi chú", Toast.LENGTH_SHORT).show()
                     }
-                    1 -> { // Lock/Unlock
-                        if (note.isLocked) {
-                            showVerifyPasswordToUnlock(note)
+                    "Ghim ghi chú" -> {
+                        databaseHelper.updatePinStatus(note.id, true) // Update trạng thái ghim xuống DB
+                        loadNotes() // Tải lại list
+                        Toast.makeText(this, "Đã ghim lên phía trên", Toast.LENGTH_SHORT).show()
+                    }
+                    "Bỏ ghim" -> {
+                        databaseHelper.updatePinStatus(note.id, false) // Hủy trạng thái ghim từ DB
+                        loadNotes()
+                        Toast.makeText(this, "Đã gỡ ghim", Toast.LENGTH_SHORT).show()
+                    }
+                    "Khóa ghi chú" -> { 
+                        val savedPassword = sharedPref.getString("note_password", "")
+                        if (savedPassword.isNullOrEmpty()) {
+                            Toast.makeText(this, "Bạn chưa thiết lập mật khẩu trong Cài đặt", Toast.LENGTH_SHORT).show()
                         } else {
-                            val savedPassword = sharedPref.getString("note_password", "")
-                            if (savedPassword.isNullOrEmpty()) {
-                                Toast.makeText(this, "Bạn chưa thiết lập mật khẩu trong Cài đặt", Toast.LENGTH_SHORT).show()
-                            } else {
-                                databaseHelper.updateLockStatus(note.id, true)
-                                loadNotes()
-                                Toast.makeText(this, "Ghi chú đã bị khóa", Toast.LENGTH_SHORT).show()
-                            }
+                            databaseHelper.updateLockStatus(note.id, true)
+                            loadNotes()
+                            Toast.makeText(this, "Ghi chú đã bị khóa", Toast.LENGTH_SHORT).show()
                         }
+                    }
+                    "Mở khóa ghi chú" -> {
+                        showVerifyPasswordToUnlock(note)
                     }
                 }
             }

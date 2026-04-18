@@ -17,6 +17,7 @@ class NoteAdapter(
         val tvNoteTitle: TextView = itemView.findViewById(R.id.tvNoteTitle)
         val tvNoteContent: TextView = itemView.findViewById(R.id.tvNoteContent)
         val ivLockIcon: ImageView = itemView.findViewById(R.id.ivLockIcon)
+        val ivPinIcon: ImageView = itemView.findViewById(R.id.ivPinIcon) // View hình ảnh icon ghim
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
@@ -34,6 +35,13 @@ class NoteAdapter(
         } else {
             holder.tvNoteContent.text = note.content
             holder.ivLockIcon.visibility = View.GONE
+        }
+
+        // Hiện nút ghim nếu ghi chú được ghim
+        if (note.isPinned) {
+            holder.ivPinIcon.visibility = View.VISIBLE
+        } else {
+            holder.ivPinIcon.visibility = View.GONE
         }
 
         holder.itemView.setOnClickListener {

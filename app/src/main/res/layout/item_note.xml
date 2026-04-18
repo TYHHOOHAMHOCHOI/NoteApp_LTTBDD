@@ -23,13 +23,25 @@
                 android:id="@+id/tvNoteTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_toStartOf="@id/ivLockIcon"
+                android:layout_toStartOf="@+id/ivPinIcon" <!-- Chỉnh vị trí tiêu đề lùi về phía bên trái so với icon ghim -->
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textStyle="bold"
                 android:textSize="18sp"
                 android:textColor="@color/text_primary"
                 android:text="Title" />
+
+            <!-- MỚI: Thêm icon cho trạng thái ghim ghi chú -->
+            <ImageView
+                android:id="@+id/ivPinIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_toStartOf="@id/ivLockIcon"
+                android:layout_marginEnd="4dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_pin"
+                android:visibility="gone"
+                app:tint="@color/primary" />
 
             <ImageView
                 android:id="@+id/ivLockIcon"
