@@ -5,5 +5,8 @@ data class Note(
     val title: String,
     val content: String,
     val isLocked: Boolean = false,
-    val isPinned: Boolean = false // Trạng thái kiểm tra ghi chú có được ghim hay không
+    val isPinned: Boolean = false, // Trạng thái kiểm tra ghi chú có được ghim hay không
+    val reminderTime: Long = 0L,
+    val isReminderEnabled: Boolean = false,
+    val repeatType: String = "once"
 )
