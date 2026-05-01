@@ -41,6 +41,18 @@ import android.text.style.ImageSpan
 import androidx.activity.result.contract.ActivityResultContracts
 import java.io.FileOutputStream
 import java.io.File
+import org.json.JSONObject
+import org.json.JSONArray
+import android.text.InputType
+import android.widget.TableLayout
+import android.widget.TableRow
+import android.widget.HorizontalScrollView
+import android.widget.ScrollView
+import android.widget.LinearLayout
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.Paint
+import android.graphics.Color
+import android.graphics.Canvas
 class AddNoteActivity : AppCompatActivity() {
 
     private lateinit var etNoteTitle: EditText
@@ -126,6 +138,9 @@ class AddNoteActivity : AppCompatActivity() {
             val imageGetter = Html.ImageGetter { source ->
                 try {
                     if (source != null) {
+                        if (source.contains("table_")) {
+                            return@ImageGetter createTableDrawable(source, resources.displayMetrics.widthPixels)
+                        }
                         val path = source.substringBefore("?mode=")
                         val isSmallMode = source.endsWith("?mode=small")
                         val d = Drawable.createFromPath(path)
@@ -606,6 +621,11 @@ class AddNoteActivity : AppCompatActivity() {
             findViewById<View>(R.id.rlDrawingOverlay).visibility = View.VISIBLE
             hidePanels()
         }
+
+        panelNoteAction.findViewById<View>(R.id.btnActionTable)?.setOnClickListener {
+            insertNewTable(3, 4)
+            hidePanels()
+        }
     }
 
     private fun setupVoiceRecording() {
@@ -756,6 +776,20 @@ class AddNoteActivity : AppCompatActivity() {
 
     private fun showImageModePopup(imageSpan: ImageSpan) {
         val source = imageSpan.source ?: return
+        if (source.contains("table_")) {
+            val options = arrayOf("Chỉnh sửa nội dung bảng", "Thay đổi kích thước (Hàng/Cột)")
+            AlertDialog.Builder(this)
+                .setItems(options) { _, which ->
+                    if (which == 0) {
+                        showTableEditorDialog(imageSpan)
+                    } else {
+                        showTableResizeDialog(imageSpan)
+                    }
+                }
+                .show()
+            return
+        }
+
         val isSmallMode = source.endsWith("?mode=small")
         
         val options = if (isSmallMode) {
@@ -796,23 +830,39 @@ class AddNoteActivity : AppCompatActivity() {
         val end = editable.getSpanEnd(oldSpan)
         if (start == -1 || end == -1) return
         
-        val path = newSource.substringBefore("?mode=")
-        val d = Drawable.createFromPath(path) ?: return
-        
-        val isSmallMode = newSource.endsWith("?mode=small")
         val displayMetrics = resources.displayMetrics
         val screenWidth = displayMetrics.widthPixels
         
+        val d: Drawable? = if (newSource.contains("table_")) {
+            createTableDrawable(newSource, screenWidth)
+        } else {
+            val path = newSource.substringBefore("?mode=")
+            Drawable.createFromPath(path)
+        }
+        
+        if (d == null) return
+        
+        val isSmallMode = newSource.endsWith("?mode=small")
         var width = screenWidth
-        if (isSmallMode) {
+        if (isSmallMode && !newSource.contains("table_")) {
             if (d.intrinsicHeight > d.intrinsicWidth) {
                 width = screenWidth / 5
             } else {
                 width = (screenWidth * 0.5).toInt()
             }
+        } else if (newSource.contains("table_")) {
+            width = d.bounds.width()
         }
-        val height = (d.intrinsicHeight * (width.toFloat() / d.intrinsicWidth)).toInt()
-        d.setBounds(0, 0, width, height)
+        
+        val height = if (newSource.contains("table_")) {
+            d.bounds.height()
+        } else {
+            (d.intrinsicHeight * (width.toFloat() / d.intrinsicWidth)).toInt()
+        }
+        
+        if (!newSource.contains("table_")) {
+            d.setBounds(0, 0, width, height)
+        }
         
         val newSpan = ImageSpan(d, newSource)
         editable.removeSpan(oldSpan)
@@ -903,6 +953,214 @@ class AddNoteActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Toast.makeText(this, "Không thể lưu hình vẽ", Toast.LENGTH_SHORT).show()
             e.printStackTrace()
+        }
+    }
+
+    private fun createTableDrawable(source: String, screenWidth: Int): Drawable? {
+        val path = source.substringBefore("?mode=")
+        val file = File(path)
+        if (!file.exists()) return null
+        val json = file.readText()
+        val jsonObject = JSONObject(json)
+        val rows = jsonObject.getInt("rows")
+        val cols = jsonObject.getInt("cols")
+        val dataArray = jsonObject.getJSONArray("data")
+        
+        val paint = Paint().apply {
+            color = Color.BLACK
+            strokeWidth = 2f
+            style = Paint.Style.STROKE
+        }
+        val textPaint = Paint().apply {
+            color = Color.BLACK
+            textSize = 30f
+            isAntiAlias = true
+        }
+        
+        val cellHeight = 80
+        val tableWidth = (screenWidth * 0.9).toInt()
+        val height = rows * cellHeight
+        val cellWidth = tableWidth / cols
+        
+        val bitmap = Bitmap.createBitmap(screenWidth, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(Color.WHITE)
+        
+        val startX = (screenWidth - tableWidth) / 2f
+        
+        for (r in 0 until rows) {
+            val rowArray = dataArray.getJSONArray(r)
+            for (c in 0 until cols) {
+                val text = rowArray.getString(c)
+                val left = startX + c * cellWidth.toFloat()
+                val top = r * cellHeight.toFloat()
+                val right = left + cellWidth
+                val bottom = top + cellHeight
+                
+                canvas.drawRect(left, top, right, bottom, paint)
+                
+                val textY = top + (cellHeight / 2) - ((textPaint.descent() + textPaint.ascent()) / 2)
+                val textX = left + 10f
+                canvas.drawText(text, textX, textY, textPaint)
+            }
+        }
+        
+        val d = BitmapDrawable(resources, bitmap)
+        d.setBounds(0, 0, screenWidth, height)
+        return d
+    }
+
+    private fun showTableEditorDialog(imageSpan: ImageSpan) {
+        val source = imageSpan.source ?: return
+        val path = source.substringBefore("?mode=")
+        val file = File(path)
+        if (!file.exists()) return
+        val jsonObject = JSONObject(file.readText())
+        val rows = jsonObject.getInt("rows")
+        val cols = jsonObject.getInt("cols")
+        val dataArray = jsonObject.getJSONArray("data")
+        
+        val scrollView = ScrollView(this)
+        val horizontalScrollView = HorizontalScrollView(this)
+        val tableLayout = TableLayout(this)
+        
+        val editTexts = Array(rows) { Array(cols) { EditText(this) } }
+        
+        for (r in 0 until rows) {
+            val tableRow = TableRow(this)
+            val rowData = dataArray.getJSONArray(r)
+            for (c in 0 until cols) {
+                val et = EditText(this).apply {
+                    setText(rowData.getString(c))
+                    minEms = 4
+                    setBackgroundResource(android.R.drawable.edit_text)
+                }
+                editTexts[r][c] = et
+                tableRow.addView(et)
+            }
+            tableLayout.addView(tableRow)
+        }
+        
+        horizontalScrollView.addView(tableLayout)
+        scrollView.addView(horizontalScrollView)
+        
+        AlertDialog.Builder(this)
+            .setTitle("Chỉnh sửa bảng")
+            .setView(scrollView)
+            .setPositiveButton("Lưu") { _, _ ->
+                val newDataArray = JSONArray()
+                for (r in 0 until rows) {
+                    val rowArray = JSONArray()
+                    for (c in 0 until cols) {
+                        rowArray.put(editTexts[r][c].text.toString())
+                    }
+                    newDataArray.put(rowArray)
+                }
+                jsonObject.put("data", newDataArray)
+                file.writeText(jsonObject.toString())
+                
+                updateImageSpan(imageSpan, source)
+            }
+            .setNegativeButton("Hủy", null)
+            .show()
+    }
+
+    private fun showTableResizeDialog(imageSpan: ImageSpan) {
+        val source = imageSpan.source ?: return
+        val path = source.substringBefore("?mode=")
+        val file = File(path)
+        if (!file.exists()) return
+        val jsonObject = JSONObject(file.readText())
+        val oldRows = jsonObject.getInt("rows")
+        val oldCols = jsonObject.getInt("cols")
+        val dataArray = jsonObject.getJSONArray("data")
+        
+        val layout = LinearLayout(this)
+        layout.orientation = LinearLayout.VERTICAL
+        layout.setPadding(40, 40, 40, 40)
+        
+        val etRows = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            hint = "Số hàng (hiện tại $oldRows)"
+        }
+        layout.addView(etRows)
+        
+        val etCols = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            hint = "Số cột (hiện tại $oldCols)"
+        }
+        layout.addView(etCols)
+        
+        AlertDialog.Builder(this)
+            .setTitle("Thay đổi kích thước bảng")
+            .setView(layout)
+            .setPositiveButton("Lưu") { _, _ ->
+                val newRowsStr = etRows.text.toString()
+                val newColsStr = etCols.text.toString()
+                if (newRowsStr.isNotEmpty() && newColsStr.isNotEmpty()) {
+                    val newRows = newRowsStr.toInt()
+                    val newCols = newColsStr.toInt()
+                    
+                    val newDataArray = JSONArray()
+                    for (r in 0 until newRows) {
+                        val rowArray = JSONArray()
+                        for (c in 0 until newCols) {
+                            if (r < oldRows && c < oldCols) {
+                                rowArray.put(dataArray.getJSONArray(r).getString(c))
+                            } else {
+                                rowArray.put("")
+                            }
+                        }
+                        newDataArray.put(rowArray)
+                    }
+                    
+                    jsonObject.put("rows", newRows)
+                    jsonObject.put("cols", newCols)
+                    jsonObject.put("data", newDataArray)
+                    file.writeText(jsonObject.toString())
+                    
+                    updateImageSpan(imageSpan, source)
+                }
+            }
+            .setNegativeButton("Hủy", null)
+            .show()
+    }
+
+    private fun insertNewTable(rows: Int, cols: Int) {
+        val directory = getDir("note_tables", Context.MODE_PRIVATE)
+        if (!directory.exists()) directory.mkdirs()
+        
+        val file = File(directory, "table_${System.currentTimeMillis()}.json")
+        val jsonObject = JSONObject()
+        jsonObject.put("rows", rows)
+        jsonObject.put("cols", cols)
+        
+        val dataArray = JSONArray()
+        for (r in 0 until rows) {
+            val rowArray = JSONArray()
+            for (c in 0 until cols) {
+                rowArray.put("")
+            }
+            dataArray.put(rowArray)
+        }
+        jsonObject.put("data", dataArray)
+        file.writeText(jsonObject.toString())
+        
+        val source = file.absolutePath + "?mode=large"
+        val d = createTableDrawable(source, resources.displayMetrics.widthPixels)
+        if (d != null) {
+            val imageSpan = ImageSpan(d, source)
+            val editable = etNoteContent.text
+            val cursorPosition = etNoteContent.selectionStart.coerceAtLeast(0)
+
+            val imageToken = "\n\uFFFC\n"
+            editable.insert(cursorPosition, imageToken)
+            
+            val start = cursorPosition + 1
+            val end = start + 1
+            editable.setSpan(imageSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            
+            etNoteContent.setSelection(end + 1)
         }
     }
 }
