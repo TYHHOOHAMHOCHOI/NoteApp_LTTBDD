@@ -1,165 +1,227 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFFFF"
-    android:fitsSystemWindows="true"
-    android:orientation="vertical">
+    android:fitsSystemWindows="true">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:text="Thêm ghi chú"
-            android:textColor="#212121"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etNoteTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:background="#F5F5F5"
-            android:hint="Tiêu đề"
-            android:inputType="text"
-            android:padding="12dp"
-            android:textSize="18sp" />
-
-        <EditText
-            android:id="@+id/etNoteContent"
+        <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:background="#F5F5F5"
-            android:gravity="top|start"
-            android:hint="Nội dung ghi chú..."
-            android:inputType="textMultiLine"
-            android:padding="12dp"
-            android:textSize="16sp" />
-    </LinearLayout>
+            android:fillViewport="true">
 
-    <LinearLayout
-        android:id="@+id/llRecordBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#E0E0E0"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="12dp"
-        android:visibility="gone">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvRecordStatus"
-            android:layout_width="0dp"
+                <EditText
+                    android:id="@+id/etNoteTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:hint="Tiêu đề"
+                    android:inputType="textMultiLine"
+                    android:paddingHorizontal="16dp"
+                    android:paddingTop="24dp"
+                    android:paddingBottom="4dp"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvCharCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="16dp"
+                    android:paddingBottom="16dp"
+                    android:text="0 ký tự"
+                    android:textColor="#9E9E9E"
+                    android:textSize="10sp" />
+
+                <EditText
+                    android:id="@+id/etNoteContent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="400dp"
+                    android:background="@null"
+                    android:gravity="top|start"
+                    android:hint="Nội dung ghi chú..."
+                    android:inputType="textMultiLine"
+                    android:paddingHorizontal="0dp"
+                    android:paddingTop="0dp"
+                    android:paddingBottom="40dp"
+                    android:textSize="16sp" />
+            </LinearLayout>
+        </ScrollView>
+
+        <LinearLayout
+            android:id="@+id/llRecordBar"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Nhấn Play để ghi âm..."
-            android:textColor="#212121"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:background="#E0E0E0"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:visibility="gone">
 
-        <ImageButton
-            android:id="@+id/btnStartRecord"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_autoplay"
-            android:tint="#212121" />
+            <TextView
+                android:id="@+id/tvRecordStatus"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Nhấn Play để ghi âm..."
+                android:textColor="#212121"
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
-        <ImageButton
-            android:id="@+id/btnStopRecord"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_autostop"
-            android:tint="#212121" />
-            
-        <ImageButton
-            android:id="@+id/btnCloseRecord"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_close_clear_cancel"
-            android:tint="#212121" />
+            <ImageButton
+                android:id="@+id/btnStartRecord"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_autoplay"
+                android:tint="#212121" />
+
+            <ImageButton
+                android:id="@+id/btnStopRecord"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_autostop"
+                android:tint="#212121" />
+                
+            <ImageButton
+                android:id="@+id/btnCloseRecord"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:tint="#212121" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:background="#F5F5F5"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp">
+
+            <ImageButton
+                android:id="@+id/btnAddInNote"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Add in note"
+                android:padding="14dp"
+                android:src="@drawable/ic_add_in_note"
+                android:tint="#212121" />
+
+            <ImageButton
+                android:id="@+id/btnAlign"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Align options"
+                android:padding="14dp"
+                android:src="@drawable/ic_align"
+                android:tint="#212121" />
+
+            <ImageButton
+                android:id="@+id/btnTextSetting"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Text settings"
+                android:padding="14dp"
+                android:src="@drawable/ic_text_setting"
+                android:tint="#212121" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/flPanelContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+            <include
+                android:id="@+id/panelAlign"
+                layout="@layout/bottom_sheet_align"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/panelTextSetting"
+                layout="@layout/bottom_sheet_text_setting"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/panelNoteAction"
+                layout="@layout/bottom_sheet_note_action"
+                android:visibility="gone" />
+
+        </FrameLayout>
+
     </LinearLayout>
 
-    <LinearLayout
+    <RelativeLayout
+        android:id="@+id/rlDrawingOverlay"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:background="#F5F5F5"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:paddingHorizontal="16dp">
-
-
-
-        <ImageButton
-            android:id="@+id/btnAddInNote"
-            android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:background="#FFFFFF"
+        android:elevation="10dp">
+        
+        <com.example.noteapp_lttbdd.DrawingView
+            android:id="@+id/drawingView"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Add in note"
-            android:padding="14dp"
-            android:src="@drawable/ic_add_in_note"
-            android:tint="#212121" />
-
-        <ImageButton
-            android:id="@+id/btnAlign"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Align options"
-            android:padding="14dp"
-            android:src="@drawable/ic_align"
-            android:tint="#212121" />
-
-        <ImageButton
-            android:id="@+id/btnTextSetting"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Text settings"
-            android:padding="14dp"
-            android:src="@drawable/ic_text_setting"
-            android:tint="#212121" />
-    </LinearLayout>
-
-    <FrameLayout
-        android:id="@+id/flPanelContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone">
-
-        <include
-            android:id="@+id/panelAlign"
-            layout="@layout/bottom_sheet_align"
-            android:visibility="gone" />
-
-        <include
-            android:id="@+id/panelTextSetting"
-            layout="@layout/bottom_sheet_text_setting"
-            android:visibility="gone" />
+            android:layout_above="@+id/llDrawingControls" />
             
-
-
-        <include
-            android:id="@+id/panelNoteAction"
-            layout="@layout/bottom_sheet_note_action"
-            android:visibility="gone" />
-
-    </FrameLayout>
-
-</LinearLayout>
+        <LinearLayout
+            android:id="@+id/llDrawingControls"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal"
+            android:background="#E0E0E0"
+            android:padding="12dp">
+            
+            <Button
+                android:id="@+id/btnDrawingClose"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Đóng"
+                android:backgroundTint="#9E9E9E" />
+                
+            <Button
+                android:id="@+id/btnDrawingClear"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Xóa"
+                android:backgroundTint="#F44336" />
+                
+            <Button
+                android:id="@+id/btnDrawingDone"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Hoàn tất"
+                android:backgroundTint="#4CAF50" />
+        </LinearLayout>
+    </RelativeLayout>
+</RelativeLayout>

@@ -22,12 +22,24 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
+import android.view.GestureDetector
+import android.view.MotionEvent
+import androidx.appcompat.app.AlertDialog
 
 import android.content.Intent
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.widget.ImageButton
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.text.Html
+import android.text.style.ImageSpan
+import androidx.activity.result.contract.ActivityResultContracts
+import java.io.FileOutputStream
 import java.io.File
 class AddNoteActivity : AppCompatActivity() {
 
@@ -37,6 +49,7 @@ class AddNoteActivity : AppCompatActivity() {
 
 
     private var currentNoteId: Long = -1L
+    private var currentEditingImageSpan: ImageSpan? = null
     private var originalTitle: String = ""
     private var originalContent: String = ""
 
@@ -48,6 +61,12 @@ class AddNoteActivity : AppCompatActivity() {
     private var activePanel: View? = null
     private var speechRecognizer: SpeechRecognizer? = null
     private var isRecordingVoice = false
+
+    private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        if (uri != null) {
+            insertImageToNote(uri)
+        }
+    }
 
     companion object {
     }
@@ -93,6 +112,8 @@ class AddNoteActivity : AppCompatActivity() {
         setupTextSettingPanel()
         setupNoteActionPanel()
         setupVoiceRecording()
+        setupImageClickListeners()
+        setupDrawingPanel()
 
 
         if (intent.hasExtra("EXTRA_NOTE_ID")) {
@@ -101,7 +122,36 @@ class AddNoteActivity : AppCompatActivity() {
             originalContent = intent.getStringExtra("EXTRA_NOTE_CONTENT").orEmpty()
 
             etNoteTitle.setText(originalTitle)
-            val spannedText = HtmlCompat.fromHtml(originalContent, HtmlCompat.FROM_HTML_MODE_LEGACY)
+
+            val imageGetter = Html.ImageGetter { source ->
+                try {
+                    if (source != null) {
+                        val path = source.substringBefore("?mode=")
+                        val isSmallMode = source.endsWith("?mode=small")
+                        val d = Drawable.createFromPath(path)
+                        if (d != null) {
+                            val displayMetrics = resources.displayMetrics
+                            val screenWidth = displayMetrics.widthPixels
+                            var width = screenWidth
+                            if (isSmallMode) {
+                                if (d.intrinsicHeight > d.intrinsicWidth) {
+                                    width = screenWidth / 5
+                                } else {
+                                    width = (screenWidth * 0.5).toInt()
+                                }
+                            }
+                            val height = (d.intrinsicHeight * (width.toFloat() / d.intrinsicWidth)).toInt()
+                            d.setBounds(0, 0, width, height)
+                            return@ImageGetter d
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                null
+            }
+
+            val spannedText = HtmlCompat.fromHtml(originalContent, HtmlCompat.FROM_HTML_MODE_LEGACY, imageGetter, null)
             etNoteContent.setText(spannedText)
         }
     }
@@ -406,6 +456,9 @@ class AddNoteActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable?) {
+                val length = s?.length ?: 0
+                this@AddNoteActivity.findViewById<TextView>(R.id.tvCharCount)?.text = "$length ký tự"
+
                 if (isAutoInserting || s == null || activeListMode == "none") return
 
                 val text = s.toString()
@@ -540,6 +593,19 @@ class AddNoteActivity : AppCompatActivity() {
             llRecordBar.visibility = View.VISIBLE
             hidePanels()
         }
+
+        panelNoteAction.findViewById<View>(R.id.btnActionImage)?.setOnClickListener {
+            pickImageLauncher.launch("image/*")
+            hidePanels()
+        }
+
+        panelNoteAction.findViewById<View>(R.id.btnActionPen)?.setOnClickListener {
+            val drawingView = findViewById<DrawingView>(R.id.drawingView)
+            drawingView.setBlankCanvas()
+            currentEditingImageSpan = null
+            findViewById<View>(R.id.rlDrawingOverlay).visibility = View.VISIBLE
+            hidePanels()
+        }
     }
 
     private fun setupVoiceRecording() {
@@ -608,6 +674,235 @@ class AddNoteActivity : AppCompatActivity() {
                 isRecordingVoice = false
             }
             llRecordBar.visibility = View.GONE
+        }
+    }
+
+    private fun insertImageToNote(uri: Uri) {
+        try {
+            val inputStream = contentResolver.openInputStream(uri)
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream?.close()
+
+            if (bitmap != null) {
+                val directory = getDir("note_images", Context.MODE_PRIVATE)
+                if (!directory.exists()) {
+                    directory.mkdirs()
+                }
+                val fileName = "img_${System.currentTimeMillis()}.png"
+                val file = File(directory, fileName)
+                val outStream = FileOutputStream(file)
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, outStream)
+                outStream.flush()
+                outStream.close()
+
+                val absolutePath = file.absolutePath
+                val source = "$absolutePath?mode=large"
+                val d = Drawable.createFromPath(absolutePath)
+                
+                if (d != null) {
+                    val displayMetrics = resources.displayMetrics
+                    val width = displayMetrics.widthPixels
+                    val height = (d.intrinsicHeight * (width.toFloat() / d.intrinsicWidth)).toInt()
+                    d.setBounds(0, 0, width, height)
+
+                    val imageSpan = ImageSpan(d, source)
+                    val editable = etNoteContent.text
+                    val cursorPosition = etNoteContent.selectionStart.coerceAtLeast(0)
+
+                    val imageToken = "\n\uFFFC\n"
+                    editable.insert(cursorPosition, imageToken)
+                    
+                    val start = cursorPosition + 1
+                    val end = start + 1
+                    editable.setSpan(imageSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    
+                    etNoteContent.setSelection(end + 1)
+                }
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Không thể tải ảnh", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+        }
+    }
+
+    private fun setupImageClickListeners() {
+        val gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onLongPress(e: MotionEvent) {
+                val x = e.x.toInt()
+                val y = e.y.toInt()
+
+                var xOffset = x - etNoteContent.totalPaddingLeft
+                var yOffset = y - etNoteContent.totalPaddingTop
+
+                xOffset += etNoteContent.scrollX
+                yOffset += etNoteContent.scrollY
+
+                val layout = etNoteContent.layout ?: return
+                val line = layout.getLineForVertical(yOffset)
+                val off = layout.getOffsetForHorizontal(line, xOffset.toFloat())
+
+                val spans = etNoteContent.text.getSpans(off, off, ImageSpan::class.java)
+                if (spans.isNotEmpty()) {
+                    showImageModePopup(spans[0])
+                }
+            }
+        })
+
+        etNoteContent.setOnTouchListener { _, event ->
+            gestureDetector.onTouchEvent(event)
+            false
+        }
+    }
+
+    private fun showImageModePopup(imageSpan: ImageSpan) {
+        val source = imageSpan.source ?: return
+        val isSmallMode = source.endsWith("?mode=small")
+        
+        val options = if (isSmallMode) {
+            arrayOf("Chế độ ảnh lớn", "Vẽ lên ảnh")
+        } else {
+            arrayOf("Chế độ ảnh nhỏ", "Vẽ lên ảnh")
+        }
+
+        AlertDialog.Builder(this)
+            .setItems(options) { _, which ->
+                if (which == 0) {
+                    val newSource = if (isSmallMode) {
+                        source.replace("?mode=small", "?mode=large")
+                    } else {
+                        if (source.contains("?mode=")) source.replace("?mode=large", "?mode=small")
+                        else "$source?mode=small"
+                    }
+                    updateImageSpan(imageSpan, newSource)
+                } else if (which == 1) {
+                    val path = source.substringBefore("?mode=")
+                    val bitmap = BitmapFactory.decodeFile(path)
+                    if (bitmap != null) {
+                        currentEditingImageSpan = imageSpan
+                        val drawingView = findViewById<DrawingView>(R.id.drawingView)
+                        drawingView.loadBitmap(bitmap)
+                        findViewById<View>(R.id.rlDrawingOverlay).visibility = View.VISIBLE
+                    } else {
+                        Toast.makeText(this, "Không thể tải ảnh để vẽ", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .show()
+    }
+
+    private fun updateImageSpan(oldSpan: ImageSpan, newSource: String) {
+        val editable = etNoteContent.text
+        val start = editable.getSpanStart(oldSpan)
+        val end = editable.getSpanEnd(oldSpan)
+        if (start == -1 || end == -1) return
+        
+        val path = newSource.substringBefore("?mode=")
+        val d = Drawable.createFromPath(path) ?: return
+        
+        val isSmallMode = newSource.endsWith("?mode=small")
+        val displayMetrics = resources.displayMetrics
+        val screenWidth = displayMetrics.widthPixels
+        
+        var width = screenWidth
+        if (isSmallMode) {
+            if (d.intrinsicHeight > d.intrinsicWidth) {
+                width = screenWidth / 5
+            } else {
+                width = (screenWidth * 0.5).toInt()
+            }
+        }
+        val height = (d.intrinsicHeight * (width.toFloat() / d.intrinsicWidth)).toInt()
+        d.setBounds(0, 0, width, height)
+        
+        val newSpan = ImageSpan(d, newSource)
+        editable.removeSpan(oldSpan)
+        editable.replace(start, end, "\uFFFC")
+        editable.setSpan(newSpan, start, start + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+    }
+
+    private fun setupDrawingPanel() {
+        val rlDrawingOverlay = findViewById<View>(R.id.rlDrawingOverlay)
+        val drawingView = findViewById<DrawingView>(R.id.drawingView)
+        
+        findViewById<Button>(R.id.btnDrawingClose).setOnClickListener {
+            currentEditingImageSpan = null
+            drawingView.clear()
+            rlDrawingOverlay.visibility = View.GONE
+        }
+        
+        findViewById<Button>(R.id.btnDrawingClear).setOnClickListener {
+            drawingView.clear()
+        }
+        
+        findViewById<Button>(R.id.btnDrawingDone).setOnClickListener {
+            val bitmap = drawingView.getBitmap()
+            if (bitmap != null) {
+                if (currentEditingImageSpan != null) {
+                    val source = currentEditingImageSpan!!.source
+                    val path = source?.substringBefore("?mode=")
+                    if (path != null) {
+                        try {
+                            val file = File(path)
+                            val outStream = FileOutputStream(file)
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outStream)
+                            outStream.flush()
+                            outStream.close()
+                            
+                            updateImageSpan(currentEditingImageSpan!!, source)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            Toast.makeText(this, "Lỗi khi lưu ảnh", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    currentEditingImageSpan = null
+                } else {
+                    insertBitmapToNote(bitmap)
+                }
+            }
+            drawingView.clear()
+            rlDrawingOverlay.visibility = View.GONE
+        }
+    }
+
+    private fun insertBitmapToNote(bitmap: Bitmap) {
+        try {
+            val directory = getDir("note_images", Context.MODE_PRIVATE)
+            if (!directory.exists()) {
+                directory.mkdirs()
+            }
+            val fileName = "draw_${System.currentTimeMillis()}.png"
+            val file = File(directory, fileName)
+            val outStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outStream)
+            outStream.flush()
+            outStream.close()
+
+            val absolutePath = file.absolutePath
+            val source = "$absolutePath?mode=large"
+            val d = Drawable.createFromPath(absolutePath)
+            
+            if (d != null) {
+                val displayMetrics = resources.displayMetrics
+                val width = displayMetrics.widthPixels
+                val height = (d.intrinsicHeight * (width.toFloat() / d.intrinsicWidth)).toInt()
+                d.setBounds(0, 0, width, height)
+
+                val imageSpan = ImageSpan(d, source)
+                val editable = etNoteContent.text
+                val cursorPosition = etNoteContent.selectionStart.coerceAtLeast(0)
+
+                val imageToken = "\n\uFFFC\n"
+                editable.insert(cursorPosition, imageToken)
+                
+                val start = cursorPosition + 1
+                val end = start + 1
+                editable.setSpan(imageSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                
+                etNoteContent.setSelection(end + 1)
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Không thể lưu hình vẽ", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
         }
     }
 }
