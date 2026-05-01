@@ -47,12 +47,61 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/llRecordBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#E0E0E0"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvRecordStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Nhấn Play để ghi âm..."
+            android:textColor="#212121"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btnStartRecord"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_autoplay"
+            android:tint="#212121" />
+
+        <ImageButton
+            android:id="@+id/btnStopRecord"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_autostop"
+            android:tint="#212121" />
+            
+        <ImageButton
+            android:id="@+id/btnCloseRecord"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:tint="#212121" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:background="#F5F5F5"
         android:gravity="center"
         android:orientation="horizontal"
         android:paddingHorizontal="16dp">
+
+
 
         <ImageButton
             android:id="@+id/btnAddInNote"
@@ -104,6 +153,8 @@
             layout="@layout/bottom_sheet_text_setting"
             android:visibility="gone" />
             
+
+
         <include
             android:id="@+id/panelNoteAction"
             layout="@layout/bottom_sheet_note_action"

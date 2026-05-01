@@ -15,7 +15,6 @@ local.properties
 # Local/IDE specific files
 /.navigation/
 /captures/
-.externalNativeBuild/
 .cxx/
 *.cxx/
 *.hprof

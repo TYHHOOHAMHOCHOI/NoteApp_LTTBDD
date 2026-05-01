@@ -1,5 +1,7 @@
 package com.example.noteapp_lttbdd
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Editable
@@ -12,31 +14,50 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
 
+import android.content.Intent
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
+import android.widget.ImageButton
+import java.io.File
 class AddNoteActivity : AppCompatActivity() {
 
     private lateinit var etNoteTitle: EditText
     private lateinit var etNoteContent: EditText
     private lateinit var databaseHelper: DatabaseHelper
 
+
     private var currentNoteId: Long = -1L
     private var originalTitle: String = ""
     private var originalContent: String = ""
 
+
     private var activeListMode: String = "none"
     private var isAutoInserting = false
 
+
     private var activePanel: View? = null
+    private var speechRecognizer: SpeechRecognizer? = null
+    private var isRecordingVoice = false
+
+    companion object {
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_note)
 
         databaseHelper = DatabaseHelper(this)
+
 
         etNoteTitle = findViewById(R.id.etNoteTitle)
         etNoteContent = findViewById(R.id.etNoteContent)
@@ -48,6 +69,11 @@ class AddNoteActivity : AppCompatActivity() {
         findViewById<View>(R.id.btnAddInNote).setOnClickListener {
             togglePanel(panelNoteAction)
         }
+
+
+
+
+
         findViewById<View>(R.id.btnAlign).setOnClickListener {
             togglePanel(panelAlign)
         }
@@ -65,6 +91,9 @@ class AddNoteActivity : AppCompatActivity() {
         setupListAutoComplete()
         setupAlignPanel()
         setupTextSettingPanel()
+        setupNoteActionPanel()
+        setupVoiceRecording()
+
 
         if (intent.hasExtra("EXTRA_NOTE_ID")) {
             currentNoteId = intent.getLongExtra("EXTRA_NOTE_ID", -1L)
@@ -81,6 +110,13 @@ class AddNoteActivity : AppCompatActivity() {
         persistNoteIfNeeded()
         super.onPause()
     }
+
+    override fun onDestroy() {
+        speechRecognizer?.destroy()
+        super.onDestroy()
+    }
+
+
 
     private fun persistNoteIfNeeded() {
         val title = etNoteTitle.text.toString().trim()
@@ -177,6 +213,8 @@ class AddNoteActivity : AppCompatActivity() {
             applyListFormat("alpha")
         }
     }
+
+
 
     /**
      * Khởi tạo các sự kiện cho bảng Định dạng
@@ -492,5 +530,84 @@ class AddNoteActivity : AppCompatActivity() {
             }
         }
         return count
+    }
+
+    private fun setupNoteActionPanel() {
+        val panelNoteAction = findViewById<View>(R.id.panelNoteAction)
+        val llRecordBar = findViewById<View>(R.id.llRecordBar)
+
+        panelNoteAction.findViewById<View>(R.id.btnActionVoice)?.setOnClickListener {
+            llRecordBar.visibility = View.VISIBLE
+            hidePanels()
+        }
+    }
+
+    private fun setupVoiceRecording() {
+        val llRecordBar = findViewById<View>(R.id.llRecordBar)
+        val btnStartRecord = findViewById<ImageButton>(R.id.btnStartRecord)
+        val btnStopRecord = findViewById<ImageButton>(R.id.btnStopRecord)
+        val btnCloseRecord = findViewById<ImageButton>(R.id.btnCloseRecord)
+        val tvRecordStatus = findViewById<TextView>(R.id.tvRecordStatus)
+
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
+        val speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+        speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "vi-VN")
+
+        speechRecognizer?.setRecognitionListener(object : RecognitionListener {
+            override fun onReadyForSpeech(params: Bundle?) {
+                tvRecordStatus.text = "Đang nghe..."
+            }
+            override fun onBeginningOfSpeech() {}
+            override fun onRmsChanged(rmsdB: Float) {}
+            override fun onBufferReceived(buffer: ByteArray?) {}
+            override fun onEndOfSpeech() {
+                tvRecordStatus.text = "Đang xử lý..."
+            }
+            override fun onError(error: Int) {
+                tvRecordStatus.text = "Lỗi ghi âm ($error). Nhấn Play để thử lại."
+                isRecordingVoice = false
+            }
+            override fun onResults(results: Bundle?) {
+                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                if (!matches.isNullOrEmpty()) {
+                    val text = matches[0]
+                    val cursorPosition = etNoteContent.selectionStart.coerceAtLeast(0)
+                    etNoteContent.text.insert(cursorPosition, text + " ")
+                    tvRecordStatus.text = "Nhấn Play để ghi âm tiếp..."
+                }
+                isRecordingVoice = false
+            }
+            override fun onPartialResults(partialResults: Bundle?) {}
+            override fun onEvent(eventType: Int, params: Bundle?) {}
+        })
+
+        btnStartRecord.setOnClickListener {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 1)
+                return@setOnClickListener
+            }
+            if (!isRecordingVoice) {
+                speechRecognizer?.startListening(speechRecognizerIntent)
+                isRecordingVoice = true
+                tvRecordStatus.text = "Đang chuẩn bị..."
+            }
+        }
+
+        btnStopRecord.setOnClickListener {
+            if (isRecordingVoice) {
+                speechRecognizer?.stopListening()
+                isRecordingVoice = false
+                tvRecordStatus.text = "Đã dừng. Nhấn Play để ghi tiếp."
+            }
+        }
+
+        btnCloseRecord.setOnClickListener {
+            if (isRecordingVoice) {
+                speechRecognizer?.stopListening()
+                isRecordingVoice = false
+            }
+            llRecordBar.visibility = View.GONE
+        }
     }
 }

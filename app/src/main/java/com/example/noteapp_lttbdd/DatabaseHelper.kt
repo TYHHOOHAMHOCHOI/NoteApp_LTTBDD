@@ -9,7 +9,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "notes_db"
-        private const val DATABASE_VERSION = 3 // Tăng version từ 2 lên 3 để hỗ trợ ghim
+        private const val DATABASE_VERSION = 4 // Dam bao database cu duoc bo sung day du cot moi
         private const val TABLE_NOTES = "notes"
 
         private const val COLUMN_ID = "id"
@@ -30,12 +30,35 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        if (oldVersion < 2) {
-            db.execSQL("ALTER TABLE $TABLE_NOTES ADD COLUMN $COLUMN_IS_LOCKED INTEGER DEFAULT 0")
+        ensureColumnExists(db, COLUMN_IS_LOCKED, "$COLUMN_IS_LOCKED INTEGER DEFAULT 0")
+        ensureColumnExists(db, COLUMN_IS_PINNED, "$COLUMN_IS_PINNED INTEGER DEFAULT 0")
+    }
+
+    override fun onOpen(db: SQLiteDatabase) {
+        super.onOpen(db)
+        if (!db.isReadOnly) {
+            ensureColumnExists(db, COLUMN_IS_LOCKED, "$COLUMN_IS_LOCKED INTEGER DEFAULT 0")
+            ensureColumnExists(db, COLUMN_IS_PINNED, "$COLUMN_IS_PINNED INTEGER DEFAULT 0")
         }
-        if (oldVersion < 3) {
-            db.execSQL("ALTER TABLE $TABLE_NOTES ADD COLUMN $COLUMN_IS_PINNED INTEGER DEFAULT 0")
+    }
+
+    private fun ensureColumnExists(db: SQLiteDatabase, columnName: String, columnDefinition: String) {
+        if (!columnExists(db, columnName)) {
+            db.execSQL("ALTER TABLE $TABLE_NOTES ADD COLUMN $columnDefinition")
         }
+    }
+
+    private fun columnExists(db: SQLiteDatabase, columnName: String): Boolean {
+        val cursor = db.rawQuery("PRAGMA table_info($TABLE_NOTES)", null)
+        cursor.use {
+            val nameIndex = it.getColumnIndex("name")
+            while (it.moveToNext()) {
+                if (it.getString(nameIndex) == columnName) {
+                    return true
+                }
+            }
+        }
+        return false
     }
 
     fun insertNote(title: String, content: String): Long {
