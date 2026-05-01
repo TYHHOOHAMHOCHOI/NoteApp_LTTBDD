@@ -33,7 +33,7 @@ class NoteAdapter(
             holder.tvNoteContent.text = "Ghi chú đã bị khóa"
             holder.ivLockIcon.visibility = View.VISIBLE
         } else {
-            holder.tvNoteContent.text = note.content
+            holder.tvNoteContent.text = androidx.core.text.HtmlCompat.fromHtml(note.content, androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim()
             holder.ivLockIcon.visibility = View.GONE
         }
 
