@@ -53,11 +53,24 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.Paint
 import android.graphics.Color
 import android.graphics.Canvas
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+import android.os.Build
+
 class AddNoteActivity : AppCompatActivity() {
 
     private lateinit var etNoteTitle: EditText
     private lateinit var etNoteContent: EditText
     private lateinit var databaseHelper: DatabaseHelper
+
+    private lateinit var tvReminderInfo: TextView
+
+    private var selectedReminderTime: Long = 0L
+    private var selectedRepeatType: String = "once"
+    private var isReminderEnabled: Boolean = false
 
 
     private var currentNoteId: Long = -1L
@@ -88,10 +101,11 @@ class AddNoteActivity : AppCompatActivity() {
         setContentView(R.layout.activity_add_note)
 
         databaseHelper = DatabaseHelper(this)
-
+        requestNotificationPermissionIfNeeded()
 
         etNoteTitle = findViewById(R.id.etNoteTitle)
         etNoteContent = findViewById(R.id.etNoteContent)
+        tvReminderInfo = findViewById(R.id.tvReminderInfo)
         
         val panelAlign = findViewById<View>(R.id.panelAlign)
         val panelTextSetting = findViewById<View>(R.id.panelTextSetting)
@@ -168,7 +182,11 @@ class AddNoteActivity : AppCompatActivity() {
 
             val spannedText = HtmlCompat.fromHtml(originalContent, HtmlCompat.FROM_HTML_MODE_LEGACY, imageGetter, null)
             etNoteContent.setText(spannedText)
+            selectedReminderTime = intent.getLongExtra("EXTRA_REMINDER_TIME", 0L)
+            isReminderEnabled = intent.getBooleanExtra("EXTRA_IS_REMINDER_ENABLED", false)
+            selectedRepeatType = intent.getStringExtra("EXTRA_REPEAT_TYPE") ?: "once"
         }
+        updateReminderUi()
     }
 
     override fun onPause() {
@@ -625,6 +643,16 @@ class AddNoteActivity : AppCompatActivity() {
         panelNoteAction.findViewById<View>(R.id.btnActionTable)?.setOnClickListener {
             insertNewTable(3, 4)
             hidePanels()
+        }
+
+        panelNoteAction.findViewById<View>(R.id.btnActionReminder)?.setOnClickListener {
+            hidePanels()
+
+            if (isReminderEnabled && selectedReminderTime > 0L) {
+                showReminderOptionsDialog()
+            } else {
+                showDatePicker()
+            }
         }
     }
 
@@ -1161,6 +1189,182 @@ class AddNoteActivity : AppCompatActivity() {
             editable.setSpan(imageSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             
             etNoteContent.setSelection(end + 1)
+        }
+    }
+
+    private fun updateReminderUi() {
+        if (isReminderEnabled && selectedReminderTime > 0L) {
+            tvReminderInfo.visibility = View.VISIBLE
+            tvReminderInfo.text = "⏰ Nhắc lúc: ${formatReminderTime(selectedReminderTime)}"
+        } else {
+            tvReminderInfo.visibility = View.GONE
+        }
+
+        val panelNoteAction = findViewById<View>(R.id.panelNoteAction)
+        val btnActionReminder = panelNoteAction.findViewById<ImageButton>(R.id.btnActionReminder)
+        val tvActionReminder = panelNoteAction.findViewById<TextView>(R.id.tvActionReminder)
+
+        if (isReminderEnabled && selectedReminderTime > 0L) {
+            btnActionReminder.setImageResource(R.drawable.outline_alarm_24)
+            tvActionReminder.text = "Sửa nhắc"
+        } else {
+            btnActionReminder.setImageResource(R.drawable.baseline_alarm_add_24)
+            tvActionReminder.text = "Nhắc hẹn"
+        }
+    }
+
+    private fun showReminderOptionsDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Sửa nhắc hẹn")
+            .setMessage("Đang nhắc lúc: ${formatReminderTime(selectedReminderTime)}")
+            .setPositiveButton("Sửa thời gian") { _, _ ->
+                showDatePicker()
+            }
+            .setNeutralButton("Hủy nhắc hẹn") { _, _ ->
+                clearReminderForCurrentNote()
+            }
+            .setNegativeButton("Đóng", null)
+            .show()
+    }
+
+    private fun showDatePicker() {
+        val calendar = Calendar.getInstance()
+
+        if (selectedReminderTime > 0L) {
+            calendar.timeInMillis = selectedReminderTime
+        }
+
+        DatePickerDialog(
+            this,
+            { _, year, month, dayOfMonth ->
+                calendar.set(Calendar.YEAR, year)
+                calendar.set(Calendar.MONTH, month)
+                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+
+                showTimePicker(calendar)
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+
+    private fun showTimePicker(calendar: Calendar) {
+        TimePickerDialog(
+            this,
+            { _, hourOfDay, minute ->
+                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                calendar.set(Calendar.MINUTE, minute)
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
+
+                val reminderTime = calendar.timeInMillis
+
+                if (reminderTime <= System.currentTimeMillis()) {
+                    Toast.makeText(
+                        this,
+                        "Vui lòng chọn thời gian trong tương lai",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return@TimePickerDialog
+                }
+
+                selectedReminderTime = reminderTime
+                isReminderEnabled = true
+                selectedRepeatType = "once"
+
+                saveReminderForCurrentNote()
+            },
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE),
+            true
+        ).show()
+    }
+
+    private fun saveReminderForCurrentNote() {
+        persistNoteIfNeeded()
+
+        if (currentNoteId == -1L) {
+            Toast.makeText(
+                this,
+                "Vui lòng nhập tiêu đề hoặc nội dung trước khi đặt nhắc hẹn",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            selectedReminderTime = 0L
+            isReminderEnabled = false
+            selectedRepeatType = "once"
+            updateReminderUi()
+            return
+        }
+
+        val updatedRows = databaseHelper.updateReminder(
+            currentNoteId,
+            selectedReminderTime,
+            selectedRepeatType
+        )
+
+        if (updatedRows > 0) {
+            ReminderScheduler.scheduleReminder(
+                context = this,
+                noteId = currentNoteId,
+                reminderTime = selectedReminderTime
+            )
+
+            updateReminderUi()
+            Toast.makeText(this, "Đã đặt nhắc hẹn", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Không thể đặt nhắc hẹn", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun clearReminderForCurrentNote() {
+        if (currentNoteId == -1L) {
+            selectedReminderTime = 0L
+            isReminderEnabled = false
+            selectedRepeatType = "once"
+            updateReminderUi()
+            return
+        }
+
+        val updatedRows = databaseHelper.clearReminder(currentNoteId)
+
+        if (updatedRows > 0) {
+            ReminderScheduler.cancelReminder(
+                context = this,
+                noteId = currentNoteId
+            )
+
+            selectedReminderTime = 0L
+            isReminderEnabled = false
+            selectedRepeatType = "once"
+
+            updateReminderUi()
+            Toast.makeText(this, "Đã hủy nhắc hẹn", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Không thể hủy nhắc hẹn", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun formatReminderTime(timeMillis: Long): String {
+        val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        return formatter.format(timeMillis)
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val isGranted = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (!isGranted) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    2001
+                )
+            }
         }
     }
 }

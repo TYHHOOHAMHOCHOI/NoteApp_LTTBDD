@@ -57,7 +57,7 @@
             <ImageButton
                 android:id="@+id/btnActionPen"
                 android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_height="53dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_pen"
                 android:tint="#212121" />
@@ -82,7 +82,7 @@
             <ImageButton
                 android:id="@+id/btnActionTable"
                 android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_height="51dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_table"
                 android:tint="#212121" />
@@ -107,7 +107,7 @@
             <ImageButton
                 android:id="@+id/btnActionVoice"
                 android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_height="53dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_voice"
                 android:tint="#212121" />
@@ -119,6 +119,33 @@
                 android:text="Ghi âm"
                 android:textColor="#212121"
                 android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Nút Nhắc hẹn -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnActionReminder"
+                android:layout_width="48dp"
+                android:layout_height="53dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/baseline_alarm_add_24"
+                android:tint="#212121" />
+
+            <TextView
+                android:id="@+id/tvActionReminder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Nhắc hẹn"
+                android:textColor="#212121"
+                android:textSize="12sp" />
+
         </LinearLayout>
     </LinearLayout>
 

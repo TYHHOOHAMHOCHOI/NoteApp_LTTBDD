@@ -44,6 +44,17 @@
                     android:textColor="#9E9E9E"
                     android:textSize="10sp" />
 
+                <TextView
+                    android:id="@+id/tvReminderInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="16dp"
+                    android:paddingBottom="12dp"
+                    android:text="Nhắc lúc: --"
+                    android:textColor="#950000"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+
                 <EditText
                     android:id="@+id/etNoteContent"
                     android:layout_width="match_parent"
