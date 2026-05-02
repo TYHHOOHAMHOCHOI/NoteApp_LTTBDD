@@ -58,6 +58,7 @@ import android.app.TimePickerDialog
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import android.os.Build
 
 class AddNoteActivity : AppCompatActivity() {
 
@@ -100,7 +101,7 @@ class AddNoteActivity : AppCompatActivity() {
         setContentView(R.layout.activity_add_note)
 
         databaseHelper = DatabaseHelper(this)
-
+        requestNotificationPermissionIfNeeded()
 
         etNoteTitle = findViewById(R.id.etNoteTitle)
         etNoteContent = findViewById(R.id.etNoteContent)
@@ -1304,6 +1305,12 @@ class AddNoteActivity : AppCompatActivity() {
         )
 
         if (updatedRows > 0) {
+            ReminderScheduler.scheduleReminder(
+                context = this,
+                noteId = currentNoteId,
+                reminderTime = selectedReminderTime
+            )
+
             updateReminderUi()
             Toast.makeText(this, "Đã đặt nhắc hẹn", Toast.LENGTH_SHORT).show()
         } else {
@@ -1323,9 +1330,15 @@ class AddNoteActivity : AppCompatActivity() {
         val updatedRows = databaseHelper.clearReminder(currentNoteId)
 
         if (updatedRows > 0) {
+            ReminderScheduler.cancelReminder(
+                context = this,
+                noteId = currentNoteId
+            )
+
             selectedReminderTime = 0L
             isReminderEnabled = false
             selectedRepeatType = "once"
+
             updateReminderUi()
             Toast.makeText(this, "Đã hủy nhắc hẹn", Toast.LENGTH_SHORT).show()
         } else {
@@ -1336,5 +1349,22 @@ class AddNoteActivity : AppCompatActivity() {
     private fun formatReminderTime(timeMillis: Long): String {
         val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
         return formatter.format(timeMillis)
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val isGranted = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (!isGranted) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    2001
+                )
+            }
+        }
     }
 }
