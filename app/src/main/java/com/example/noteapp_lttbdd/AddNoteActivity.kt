@@ -64,6 +64,7 @@ class AddNoteActivity : AppCompatActivity() {
 
     private lateinit var etNoteTitle: EditText
     private lateinit var etNoteContent: EditText
+    private lateinit var etNoteTag: EditText        // Ô nhập tag của ghi chú
     private lateinit var databaseHelper: DatabaseHelper
 
     private lateinit var tvReminderInfo: TextView
@@ -77,6 +78,7 @@ class AddNoteActivity : AppCompatActivity() {
     private var currentEditingImageSpan: ImageSpan? = null
     private var originalTitle: String = ""
     private var originalContent: String = ""
+    private var originalTag: String = ""           // Lưu tag gốc để kiểm tra thay đổi
 
 
     private var activeListMode: String = "none"
@@ -105,6 +107,7 @@ class AddNoteActivity : AppCompatActivity() {
 
         etNoteTitle = findViewById(R.id.etNoteTitle)
         etNoteContent = findViewById(R.id.etNoteContent)
+        etNoteTag = findViewById(R.id.etNoteTag)        // Ánh xạ EditText tag
         tvReminderInfo = findViewById(R.id.tvReminderInfo)
         
         val panelAlign = findViewById<View>(R.id.panelAlign)
@@ -148,6 +151,10 @@ class AddNoteActivity : AppCompatActivity() {
             originalContent = intent.getStringExtra("EXTRA_NOTE_CONTENT").orEmpty()
 
             etNoteTitle.setText(originalTitle)
+
+            // Nạp tag đã lưu vào ô nhập
+            originalTag = intent.getStringExtra("EXTRA_NOTE_TAG").orEmpty()
+            etNoteTag.setText(originalTag)
 
             val imageGetter = Html.ImageGetter { source ->
                 try {
@@ -204,6 +211,8 @@ class AddNoteActivity : AppCompatActivity() {
     private fun persistNoteIfNeeded() {
         val title = etNoteTitle.text.toString().trim()
         val plainContent = etNoteContent.text.toString().trim()
+        // Lấy giá trị tag, xóa khoảng trắng thừa và dấu # nếu user tự nhập
+        val tag = etNoteTag.text.toString().trim().trimStart('#')
 
         if (title.isEmpty() && plainContent.isEmpty()) {
             return
@@ -212,23 +221,27 @@ class AddNoteActivity : AppCompatActivity() {
         val contentHtml = HtmlCompat.toHtml(etNoteContent.text, HtmlCompat.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE)
 
         if (currentNoteId == -1L) {
-            val insertedId = databaseHelper.insertNote(title, contentHtml)
+            // Tạo ghi chú mới, truyền thêm tag
+            val insertedId = databaseHelper.insertNote(title, contentHtml, tag)
             if (insertedId > -1L) {
                 currentNoteId = insertedId
                 originalTitle = title
                 originalContent = contentHtml
+                originalTag = tag
             }
             return
         }
 
-        if (title == originalTitle && contentHtml == originalContent) {
-            return
+        if (title == originalTitle && contentHtml == originalContent && tag == originalTag) {
+            return  // Không có gì thay đổi, bỏ qua
         }
 
-        val updatedRows = databaseHelper.updateNote(currentNoteId, title, contentHtml)
+        // Cập nhật ghi chú, truyền thêm tag
+        val updatedRows = databaseHelper.updateNote(currentNoteId, title, contentHtml, tag)
         if (updatedRows > 0) {
             originalTitle = title
             originalContent = contentHtml
+            originalTag = tag
         }
     }
 

@@ -65,6 +65,22 @@
             android:textColor="@color/text_secondary"
             android:text="Content" />
 
+        <!-- Hiển thị tag của ghi chú, ẩn đi nếu tag trống -->
+        <TextView
+            android:id="@+id/tvNoteTag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:textSize="12sp"
+            android:textColor="@color/primary"
+            android:background="@drawable/tag_background"
+            android:visibility="gone"
+            android:text="#tag" />
+
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

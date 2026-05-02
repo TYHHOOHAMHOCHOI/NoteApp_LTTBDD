@@ -17,7 +17,8 @@ class NoteAdapter(
         val tvNoteTitle: TextView = itemView.findViewById(R.id.tvNoteTitle)
         val tvNoteContent: TextView = itemView.findViewById(R.id.tvNoteContent)
         val ivLockIcon: ImageView = itemView.findViewById(R.id.ivLockIcon)
-        val ivPinIcon: ImageView = itemView.findViewById(R.id.ivPinIcon) // View hình ảnh icon ghim
+        val ivPinIcon: ImageView = itemView.findViewById(R.id.ivPinIcon)   // Icon ghim
+        val tvNoteTag: TextView = itemView.findViewById(R.id.tvNoteTag)    // Label hiển thị tag
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
@@ -37,11 +38,19 @@ class NoteAdapter(
             holder.ivLockIcon.visibility = View.GONE
         }
 
-        // Hiện nút ghim nếu ghi chú được ghim
+        // Hiện icon ghim nếu ghi chú được ghim
         if (note.isPinned) {
             holder.ivPinIcon.visibility = View.VISIBLE
         } else {
             holder.ivPinIcon.visibility = View.GONE
+        }
+
+        // Hiện label tag nếu ghi chú có tag, ẩn đi nếu tag rỗng
+        if (note.tag.isNotEmpty()) {
+            holder.tvNoteTag.visibility = View.VISIBLE
+            holder.tvNoteTag.text = "#${note.tag}"  // Hiển thị dạng #tenTag
+        } else {
+            holder.tvNoteTag.visibility = View.GONE
         }
 
         holder.itemView.setOnClickListener {

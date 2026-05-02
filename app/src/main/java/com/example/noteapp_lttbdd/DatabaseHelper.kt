@@ -9,7 +9,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "notes_db"
-        private const val DATABASE_VERSION = 5
+        private const val DATABASE_VERSION = 6
         private const val TABLE_NOTES = "notes"
 
         private const val COLUMN_ID = "id"
@@ -20,6 +20,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         private const val COLUMN_REMINDER_TIME = "reminder_time"
         private const val COLUMN_IS_REMINDER_ENABLED = "is_reminder_enabled"
         private const val COLUMN_REPEAT_TYPE = "repeat_type"
+        private const val COLUMN_TAG = "tag"               // Tên cột lưu thẻ (tag)
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -31,7 +32,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 + "$COLUMN_IS_PINNED INTEGER DEFAULT 0,"
                 + "$COLUMN_REMINDER_TIME INTEGER DEFAULT 0,"
                 + "$COLUMN_IS_REMINDER_ENABLED INTEGER DEFAULT 0,"
-                + "$COLUMN_REPEAT_TYPE TEXT DEFAULT 'once')")
+                + "$COLUMN_REPEAT_TYPE TEXT DEFAULT 'once',"
+                + "$COLUMN_TAG TEXT DEFAULT '')")
         db.execSQL(createTableQuery)
     }
 
@@ -44,6 +46,10 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             ensureColumnExists(db, COLUMN_IS_REMINDER_ENABLED, "$COLUMN_IS_REMINDER_ENABLED INTEGER DEFAULT 0")
             ensureColumnExists(db, COLUMN_REPEAT_TYPE, "$COLUMN_REPEAT_TYPE TEXT DEFAULT 'once'")
         }
+        // Version 6: thêm cột tag
+        if (oldVersion < 6) {
+            ensureColumnExists(db, COLUMN_TAG, "$COLUMN_TAG TEXT DEFAULT ''")
+        }
     }
 
     override fun onOpen(db: SQLiteDatabase) {
@@ -55,6 +61,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             ensureColumnExists(db, COLUMN_REMINDER_TIME, "$COLUMN_REMINDER_TIME INTEGER DEFAULT 0")
             ensureColumnExists(db, COLUMN_IS_REMINDER_ENABLED, "$COLUMN_IS_REMINDER_ENABLED INTEGER DEFAULT 0")
             ensureColumnExists(db, COLUMN_REPEAT_TYPE, "$COLUMN_REPEAT_TYPE TEXT DEFAULT 'once'")
+            ensureColumnExists(db, COLUMN_TAG, "$COLUMN_TAG TEXT DEFAULT ''")
         }
     }
 
@@ -77,27 +84,42 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return false
     }
 
-    fun insertNote(title: String, content: String): Long {
+    // Thêm ghi chú mới vào database
+    fun insertNote(title: String, content: String, tag: String = ""): Long {
         val db = this.writableDatabase
         val contentValues = ContentValues().apply {
             put(COLUMN_TITLE, title)
             put(COLUMN_CONTENT, content)
             put(COLUMN_IS_LOCKED, 0)
-            put(COLUMN_IS_PINNED, 0) // Khi tạo mới mặc định không ghim
+            put(COLUMN_IS_PINNED, 0)      // Khi tạo mới mặc định không ghim
             put(COLUMN_REMINDER_TIME, 0L)
             put(COLUMN_IS_REMINDER_ENABLED, 0)
             put(COLUMN_REPEAT_TYPE, "once")
+            put(COLUMN_TAG, tag)          // Lưu tag vào database
         }
         val id = db.insert(TABLE_NOTES, null, contentValues)
         db.close()
         return id
     }
 
-    fun updateNote(id: Long, title: String, content: String): Int {
+    // Cập nhật tiêu đề và nội dung ghi chú
+    fun updateNote(id: Long, title: String, content: String, tag: String = ""): Int {
         val db = this.writableDatabase
         val contentValues = ContentValues().apply {
             put(COLUMN_TITLE, title)
             put(COLUMN_CONTENT, content)
+            put(COLUMN_TAG, tag)          // Cập nhật tag khi lưu ghi chú
+        }
+        val success = db.update(TABLE_NOTES, contentValues, "$COLUMN_ID=?", arrayOf(id.toString()))
+        db.close()
+        return success
+    }
+
+    // Cập nhật tag riêng lẻ cho ghi chú (dùng khi chỉ muốn đổi tag)
+    fun updateTag(id: Long, tag: String): Int {
+        val db = this.writableDatabase
+        val contentValues = ContentValues().apply {
+            put(COLUMN_TAG, tag)
         }
         val success = db.update(TABLE_NOTES, contentValues, "$COLUMN_ID=?", arrayOf(id.toString()))
         db.close()
@@ -187,6 +209,9 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 val reminderTime = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_REMINDER_TIME))
                 val isReminderEnabled = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IS_REMINDER_ENABLED)) == 1
                 val repeatType = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_REPEAT_TYPE)) ?: "once"
+                // Lấy giá trị tag, nếu cột chưa có thì mặc định là chuỗi rỗng
+                val tagIndex = cursor.getColumnIndex(COLUMN_TAG)
+                val tag = if (tagIndex != -1) cursor.getString(tagIndex) ?: "" else ""
 
                 noteList.add(
                     Note(
@@ -197,7 +222,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                         isPinned = isPinned,
                         reminderTime = reminderTime,
                         isReminderEnabled = isReminderEnabled,
-                        repeatType = repeatType
+                        repeatType = repeatType,
+                        tag = tag             // Gán tag cho ghi chú
                     )
                 )
             } while (cursor.moveToNext())
@@ -232,6 +258,9 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             val isReminderEnabled =
                 cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IS_REMINDER_ENABLED)) == 1
             val repeatType = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_REPEAT_TYPE)) ?: "once"
+            // Lấy tag, nếu cột chưa tồn tại thì trả về chuỗi rỗng
+            val tagIndex = cursor.getColumnIndex(COLUMN_TAG)
+            val tag = if (tagIndex != -1) cursor.getString(tagIndex) ?: "" else ""
 
             note = Note(
                 id = noteId,
@@ -241,7 +270,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 isPinned = isPinned,
                 reminderTime = reminderTime,
                 isReminderEnabled = isReminderEnabled,
-                repeatType = repeatType
+                repeatType = repeatType,
+                tag = tag                 // Gán tag cho ghi chú
             )
         }
 

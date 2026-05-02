@@ -100,6 +100,7 @@ class MainActivity : AppCompatActivity() {
         intent.putExtra("EXTRA_NOTE_ID", note.id)
         intent.putExtra("EXTRA_NOTE_TITLE", note.title)
         intent.putExtra("EXTRA_NOTE_CONTENT", note.content)
+        intent.putExtra("EXTRA_NOTE_TAG", note.tag)         // Truyền tag sang màn hình chỉnh sửa
 
         intent.putExtra("EXTRA_REMINDER_TIME", note.reminderTime)
         intent.putExtra("EXTRA_IS_REMINDER_ENABLED", note.isReminderEnabled)
