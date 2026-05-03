@@ -16,6 +16,11 @@ class DayNotesActivity : AppCompatActivity() {
     private lateinit var viewPager: ViewPager2
     private lateinit var tvDateTitle: TextView
     
+    override fun attachBaseContext(newBase: android.content.Context) {
+        val lang = LocaleHelper.getLanguage(newBase)
+        super.attachBaseContext(LocaleHelper.setLocale(newBase, lang))
+    }
+
     private var startTime: Long = 0
     private var endTime: Long = 0
     private var dateString: String = ""

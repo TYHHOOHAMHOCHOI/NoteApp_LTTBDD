@@ -14,7 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Tôi"
+        android:text="@string/profile_title"
         android:textColor="@color/text_primary"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -128,7 +128,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Cài đặt"
+                            android:text="@string/settings"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp" />
                     </LinearLayout>
@@ -155,7 +155,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Sao lưu &amp; Khôi phục"
+                            android:text="@string/backup_restore"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp" />
                     </LinearLayout>
@@ -193,7 +193,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Thống kê sử dụng"
+                            android:text="@string/usage_stats"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp" />
                     </LinearLayout>
@@ -221,7 +221,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Các tệp xóa gần đây"
+                            android:text="@string/recently_deleted"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp" />
                     </LinearLayout>

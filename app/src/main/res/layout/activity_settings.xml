@@ -25,7 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Cài đặt"
+        android:text="@string/settings"
         android:textColor="@color/text_primary"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -76,7 +76,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Dark Mode"
+                            android:text="@string/dark_mode"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp" />
 
@@ -110,7 +110,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Chủ đề"
+                            android:text="@string/theme"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp" />
                     </LinearLayout>
@@ -148,7 +148,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Tự động lưu"
+                            android:text="@string/auto_save"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp" />
                     </LinearLayout>
@@ -175,7 +175,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Khóa ứng dụng"
+                            android:text="@string/app_lock"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp" />
                     </LinearLayout>
@@ -202,7 +202,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Khóa ghi chú"
+                            android:text="@string/note_lock"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp" />
                     </LinearLayout>
@@ -229,9 +229,17 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Ngôn ngữ"
+                            android:text="@string/language"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/tvCurrentLanguage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tiếng Việt"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="14sp" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

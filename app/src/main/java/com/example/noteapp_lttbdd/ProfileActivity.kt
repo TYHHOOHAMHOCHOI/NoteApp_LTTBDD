@@ -90,23 +90,28 @@ class ProfileActivity : AppCompatActivity() {
         setupBottomNavigation()
     }
 
+    override fun attachBaseContext(newBase: android.content.Context) {
+        val lang = LocaleHelper.getLanguage(newBase)
+        super.attachBaseContext(LocaleHelper.setLocale(newBase, lang))
+    }
+
     private fun showEditUsernameDialog() {
         val editText = EditText(this)
         editText.setText(tvUsername.text)
 
         AlertDialog.Builder(this)
-            .setTitle("Đổi tên người dùng")
+            .setTitle(R.string.edit_username)
             .setView(editText)
-            .setPositiveButton("Lưu") { _, _ ->
+            .setPositiveButton(R.string.save) { _, _ ->
                 val newName = editText.text.toString().trim()
                 if (newName.isNotEmpty()) {
                     tvUsername.text = newName
                     sharedPreferences.edit().putString("username", newName).apply()
                 } else {
-                    Toast.makeText(this, "Tên không được để trống", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, R.string.name_empty_error, Toast.LENGTH_SHORT).show()
                 }
             }
-            .setNegativeButton("Hủy", null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
 

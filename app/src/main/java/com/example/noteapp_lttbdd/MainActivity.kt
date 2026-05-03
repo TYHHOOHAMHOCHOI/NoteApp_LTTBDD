@@ -95,6 +95,11 @@ class MainActivity : AppCompatActivity() {
         setupBottomNavigation()
     }
 
+    override fun attachBaseContext(newBase: android.content.Context) {
+        val lang = LocaleHelper.getLanguage(newBase)
+        super.attachBaseContext(LocaleHelper.setLocale(newBase, lang))
+    }
+
     private fun openNote(note: Note) {
         val intent = Intent(this, AddNoteActivity::class.java)
         intent.putExtra("EXTRA_NOTE_ID", note.id)

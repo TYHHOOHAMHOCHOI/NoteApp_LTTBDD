@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">NoteApp_LTTBDD</string>
+    <string name="settings">Cài đặt</string>
+    <string name="dark_mode">Chế độ tối</string>
+    <string name="theme">Chủ đề</string>
+    <string name="auto_save">Tự động lưu</string>
+    <string name="app_lock">Khóa ứng dụng</string>
+    <string name="note_lock">Khóa ghi chú</string>
+    <string name="language">Ngôn ngữ</string>
+    <string name="select_language">Chọn ngôn ngữ</string>
+    <string name="vietnamese">Tiếng Việt</string>
+    <string name="english">Tiếng Anh</string>
+    <string name="cancel">Hủy</string>
+    <string name="search_hint">Tìm kiếm ghi chú…</string>
+    <string name="empty_notes">Chưa có ghi chú nào</string>
+    <string name="add_note">Thêm ghi chú</string>
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_calendar">Lịch</string>
+    <string name="nav_profile">Cá nhân</string>
+    <string name="profile_title">Tôi</string>
+    <string name="backup_restore">Sao lưu &amp; Khôi phục</string>
+    <string name="usage_stats">Thống kê sử dụng</string>
+    <string name="recently_deleted">Các tệp xóa gần đây</string>
+    <string name="edit_username">Đổi tên người dùng</string>
+    <string name="save">Lưu</string>
+    <string name="name_empty_error">Tên không được để trống</string>
+</resources>

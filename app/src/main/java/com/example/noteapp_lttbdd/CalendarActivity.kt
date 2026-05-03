@@ -56,6 +56,11 @@ class CalendarActivity : AppCompatActivity() {
         setupBottomNavigation()
     }
 
+    override fun attachBaseContext(newBase: android.content.Context) {
+        val lang = LocaleHelper.getLanguage(newBase)
+        super.attachBaseContext(LocaleHelper.setLocale(newBase, lang))
+    }
+
     private fun setupBottomNavigation() {
         bottomNavigation.selectedItemId = R.id.navigation_calendar
         bottomNavigation.setOnItemSelectedListener { item ->
