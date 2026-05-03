@@ -34,7 +34,6 @@ class ProfileActivity : AppCompatActivity() {
         if (result.resultCode == Activity.RESULT_OK) {
             val imageUri: Uri? = result.data?.data
             imageUri?.let {
-                // Lưu URI vào SharedPreferences (Trong ứng dụng thực tế nên copy file vào nội bộ app)
                 saveAvatarUri(it.toString())
                 displayAvatar(it.toString())
             }
@@ -78,13 +77,18 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
+        val itemBackup = findViewById<View>(R.id.itemBackup)
+        itemBackup.setOnClickListener {
+            startActivity(Intent(this, BackupActivity::class.java))
+        }
+
         setupBottomNavigation()
     }
 
     private fun showEditUsernameDialog() {
         val editText = EditText(this)
         editText.setText(tvUsername.text)
-        
+
         AlertDialog.Builder(this)
             .setTitle("Đổi tên người dùng")
             .setView(editText)
