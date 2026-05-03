@@ -219,6 +219,13 @@ class MainActivity : AppCompatActivity() {
                     overridePendingTransition(0, 0)
                     true
                 }
+                R.id.navigation_calendar -> {
+                    val intent = Intent(this, CalendarActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                    startActivity(intent)
+                    overridePendingTransition(0, 0)
+                    true
+                }
                 else -> false
             }
         }

@@ -9,5 +9,7 @@ data class Note(
     val reminderTime: Long = 0L,
     val isReminderEnabled: Boolean = false,
     val repeatType: String = "once",
-    val tag: String = ""            // Thẻ (tag) gắn cho ghi chú, mặc định rỗng
+    val tag: String = "",
+    val isDeleted: Boolean = false,
+    val createdAt: Long = 0L
 )
