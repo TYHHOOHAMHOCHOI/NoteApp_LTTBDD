@@ -1208,7 +1208,8 @@ class AddNoteActivity : AppCompatActivity() {
     private fun updateReminderUi() {
         if (isReminderEnabled && selectedReminderTime > 0L) {
             tvReminderInfo.visibility = View.VISIBLE
-            tvReminderInfo.text = "⏰ Nhắc lúc: ${formatReminderTime(selectedReminderTime)}"
+            tvReminderInfo.text =
+                "⏰ Nhắc lúc: ${formatReminderTime(selectedReminderTime)} • ${getRepeatText(selectedRepeatType)}"
         } else {
             tvReminderInfo.visibility = View.GONE
         }
@@ -1223,6 +1224,14 @@ class AddNoteActivity : AppCompatActivity() {
         } else {
             btnActionReminder.setImageResource(R.drawable.baseline_alarm_add_24)
             tvActionReminder.text = "Nhắc hẹn"
+        }
+    }
+
+    private fun getRepeatText(repeatType: String): String {
+        return when (repeatType) {
+            "daily" -> "Hằng ngày"
+            "weekly" -> "Hằng tuần"
+            else -> "Không lặp"
         }
     }
 
@@ -1281,17 +1290,45 @@ class AddNoteActivity : AppCompatActivity() {
                     ).show()
                     return@TimePickerDialog
                 }
-
-                selectedReminderTime = reminderTime
-                isReminderEnabled = true
-                selectedRepeatType = "once"
-
-                saveReminderForCurrentNote()
+                showRepeatPickerDialog(reminderTime)
             },
             calendar.get(Calendar.HOUR_OF_DAY),
             calendar.get(Calendar.MINUTE),
             true
         ).show()
+    }
+
+    private fun showRepeatPickerDialog(reminderTime: Long) {
+        val repeatLabels = arrayOf(
+            "Không lặp",
+            "Hằng ngày",
+            "Hằng tuần"
+        )
+
+        val repeatValues = arrayOf(
+            "once",
+            "daily",
+            "weekly"
+        )
+
+        val currentIndex = when (selectedRepeatType) {
+            "daily" -> 1
+            "weekly" -> 2
+            else -> 0
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Lặp lại nhắc hẹn")
+            .setSingleChoiceItems(repeatLabels, currentIndex) { dialog, which ->
+                selectedReminderTime = reminderTime
+                selectedRepeatType = repeatValues[which]
+                isReminderEnabled = true
+
+                saveReminderForCurrentNote()
+                dialog.dismiss()
+            }
+            .setNegativeButton("Hủy", null)
+            .show()
     }
 
     private fun saveReminderForCurrentNote() {

@@ -350,4 +350,53 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
         return note
     }
+
+    fun getEnabledReminderNotes(): List<Note> {
+        val notes = mutableListOf<Note>()
+        val db = this.readableDatabase
+
+        val cursor = db.query(
+            TABLE_NOTES,
+            null,
+            "$COLUMN_IS_REMINDER_ENABLED=? AND $COLUMN_REMINDER_TIME>?",
+            arrayOf("1", "0"),
+            null,
+            null,
+            null
+        )
+
+        cursor.use {
+            while (it.moveToNext()) {
+                val id = it.getLong(it.getColumnIndexOrThrow(COLUMN_ID))
+                val title = it.getString(it.getColumnIndexOrThrow(COLUMN_TITLE))
+                val content = it.getString(it.getColumnIndexOrThrow(COLUMN_CONTENT))
+                val isLocked =
+                    it.getInt(it.getColumnIndexOrThrow(COLUMN_IS_LOCKED)) == 1
+                val isPinned =
+                    it.getInt(it.getColumnIndexOrThrow(COLUMN_IS_PINNED)) == 1
+                val reminderTime =
+                    it.getLong(it.getColumnIndexOrThrow(COLUMN_REMINDER_TIME))
+                val isReminderEnabled =
+                    it.getInt(it.getColumnIndexOrThrow(COLUMN_IS_REMINDER_ENABLED)) == 1
+                val repeatType =
+                    it.getString(it.getColumnIndexOrThrow(COLUMN_REPEAT_TYPE)) ?: "once"
+
+                notes.add(
+                    Note(
+                        id = id,
+                        title = title,
+                        content = content,
+                        isLocked = isLocked,
+                        isPinned = isPinned,
+                        reminderTime = reminderTime,
+                        isReminderEnabled = isReminderEnabled,
+                        repeatType = repeatType
+                    )
+                )
+            }
+        }
+
+        db.close()
+        return notes
+    }
 }
