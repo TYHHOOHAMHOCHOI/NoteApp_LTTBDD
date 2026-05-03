@@ -65,6 +65,16 @@
             android:textColor="@color/text_secondary"
             android:text="Content" />
 
+        <TextView
+            android:id="@+id/tvItemReminderInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="⏰ Nhắc lúc: --"
+            android:textColor="#950000"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
         <!-- Hiển thị tag của ghi chú, ẩn đi nếu tag trống -->
         <TextView
             android:id="@+id/tvNoteTag"
