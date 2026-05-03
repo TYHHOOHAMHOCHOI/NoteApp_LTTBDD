@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/calendar_main"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_color">
+
+    <!-- HEADER -->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageButton
+            android:id="@+id/btnPrev"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_media_previous"
+            android:background="@null"
+            app:tint="@color/text_primary"
+            android:contentDescription="Tháng trước" />
+
+        <TextView
+            android:id="@+id/txtMonthYear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="June 2026"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:layout_marginHorizontal="16dp"/>
+
+        <ImageButton
+            android:id="@+id/btnNext"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_media_next"
+            android:background="@null"
+            app:tint="@color/text_primary"
+            android:contentDescription="Tháng sau" />
+
+    </LinearLayout>
+
+    <!-- HEADER WEEK -->
+    <LinearLayout
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal"
+        android:weightSum="7"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView android:text="CN" style="@style/dayHeader" android:textColor="@color/text_secondary"/>
+        <TextView android:text="T2" style="@style/dayHeader" android:textColor="@color/text_secondary"/>
+        <TextView android:text="T3" style="@style/dayHeader" android:textColor="@color/text_secondary"/>
+        <TextView android:text="T4" style="@style/dayHeader" android:textColor="@color/text_secondary"/>
+        <TextView android:text="T5" style="@style/dayHeader" android:textColor="@color/text_secondary"/>
+        <TextView android:text="T6" style="@style/dayHeader" android:textColor="@color/text_secondary"/>
+        <TextView android:text="T7" style="@style/dayHeader" android:textColor="@color/text_secondary"/>
+    </LinearLayout>
+
+    <!-- GRID -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerCalendar"
+        android:layout_marginTop="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/bg_color"
+        app:itemIconTint="@color/primary"
+        app:itemTextColor="@color/primary"
+        app:menu="@menu/bottom_nav_menu" />
+
+</LinearLayout>
