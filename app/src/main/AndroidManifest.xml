@@ -33,6 +33,7 @@
         <activity android:name=".BackupActivity"/>
         <activity android:name=".RecentlyDeletedActivity"/>
         <activity android:name=".CalendarActivity" />
+        <activity android:name=".DayNotesActivity" />
         <receiver
             android:name=".ReminderReceiver"
             android:exported="false" />

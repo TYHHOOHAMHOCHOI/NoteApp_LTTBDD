@@ -1,28 +1,40 @@
-<LinearLayout
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="6dp"
-    android:gravity="center"
     android:layout_width="match_parent"
-    android:layout_height="60dp">
+    android:layout_height="wrap_content"
+    android:padding="4dp">
 
-    <!-- số note -->
-    <TextView
-        android:id="@+id/txtNoteCount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="2 notes"
-        android:textColor="@color/primary"
-        android:textSize="10sp"/>
+    <!-- Square Container for Circle -->
+    <LinearLayout
+        android:id="@+id/layoutCircle"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="@drawable/bg_calendar_day_empty">
 
-    <!-- ngày -->
-    <TextView
-        android:id="@+id/txtDay"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="15"
-        android:textStyle="bold"
-        android:textColor="@color/text_primary"
-        android:textSize="14sp"/>
+        <!-- ngày -->
+        <TextView
+            android:id="@+id/txtDay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="15"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:textSize="12sp"/>
 
-</LinearLayout>
+        <!-- số note -->
+        <TextView
+            android:id="@+id/txtNoteCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2"
+            android:textColor="@color/text_secondary"
+            android:textSize="10sp"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+
+</FrameLayout>
