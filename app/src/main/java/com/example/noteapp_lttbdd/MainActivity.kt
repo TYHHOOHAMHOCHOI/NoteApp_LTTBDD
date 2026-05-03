@@ -19,6 +19,23 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import androidx.activity.result.contract.ActivityResultContracts
+import android.net.Uri
+import androidx.core.text.HtmlCompat
+import android.graphics.pdf.PdfDocument
+import android.graphics.Paint
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import android.text.Html
+import android.text.Layout
+import android.text.StaticLayout
+import android.text.TextPaint
+import org.json.JSONObject
+import java.io.File
+import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,6 +49,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPref: SharedPreferences
 
     private var noteList: List<Note> = emptyList()
+    private var noteToExport: Note? = null
+
+    private val createTxtLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
+        uri?.let { saveNoteToTxt(it) }
+    }
+
+    private val createPdfLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/pdf")) { uri ->
+        uri?.let { saveNoteToPdf(it) }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         sharedPref = getSharedPreferences("settings", MODE_PRIVATE)
@@ -135,7 +161,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showNoteOptions(note: Note, view: View) {
-        val optionsList = mutableListOf("Xóa")
+        val optionsList = mutableListOf("Xóa", "Xuất file")
 
         // Thêm mục Ghim/Bỏ ghim tùy thuộc vào trạng thái
         if (note.isPinned) {
@@ -183,9 +209,158 @@ class MainActivity : AppCompatActivity() {
                     "Mở khóa ghi chú" -> {
                         showVerifyPasswordToUnlock(note)
                     }
+                    "Xuất file" -> {
+                        showExportDialog(note)
+                    }
                 }
             }
             .show()
+    }
+
+    private fun showExportDialog(note: Note) {
+        val options = arrayOf("File PDF (.pdf)", "File văn bản (.txt)")
+        AlertDialog.Builder(this)
+            .setTitle("Chọn định dạng xuất file")
+            .setItems(options) { _, which ->
+                noteToExport = note
+                val fileName = note.title.ifBlank { "Ghi chú_${note.id}" }.replace(Regex("[\\\\/:*?\"<>|]"), "_")
+                when (which) {
+                    0 -> createPdfLauncher.launch("$fileName.pdf")
+                    1 -> createTxtLauncher.launch("$fileName.txt")
+                }
+            }
+            .show()
+    }
+
+    private fun saveNoteToTxt(uri: Uri) {
+        val note = noteToExport ?: return
+        try {
+            contentResolver.openOutputStream(uri)?.use { outputStream ->
+                val plainContent = HtmlCompat.fromHtml(note.content, HtmlCompat.FROM_HTML_MODE_LEGACY).toString()
+                val textToSave = "Tiêu đề: ${note.title}\n\n$plainContent"
+                outputStream.write(textToSave.toByteArray())
+                Toast.makeText(this, "Đã xuất file TXT thành công", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: IOException) {
+            Toast.makeText(this, "Lỗi khi xuất file TXT", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun saveNoteToPdf(uri: Uri) {
+        val note = noteToExport ?: return
+        val pdfDocument = PdfDocument()
+        
+        val pageWidth = 595
+        val pageHeight = 842
+        val margin = 50f
+        val contentWidth = (pageWidth - 2 * margin).toInt()
+
+        val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create()
+        val page = pdfDocument.startPage(pageInfo)
+        val canvas = page.canvas
+
+        var y = margin
+        val titlePaint = Paint().apply {
+            color = Color.BLACK
+            textSize = 20f
+            isFakeBoldText = true
+        }
+        canvas.drawText("Tiêu đề: ${note.title}", margin, y + 20f, titlePaint)
+        y += 60f
+
+        val textPaint = TextPaint().apply {
+            color = Color.BLACK
+            textSize = 14f
+        }
+
+        val imageGetter = Html.ImageGetter { source ->
+            try {
+                if (source != null) {
+                    if (source.contains("table_")) {
+                        return@ImageGetter createTableDrawableForPdf(source, contentWidth)
+                    }
+                    val path = source.substringBefore("?mode=")
+                    val isSmallMode = source.endsWith("?mode=small")
+                    val d = Drawable.createFromPath(path)
+                    if (d != null) {
+                        var width = contentWidth
+                        if (isSmallMode) {
+                            width = if (d.intrinsicHeight > d.intrinsicWidth) contentWidth / 4 else (contentWidth * 0.5).toInt()
+                        }
+                        val height = (d.intrinsicHeight * (width.toFloat() / d.intrinsicWidth)).toInt()
+                        d.setBounds(0, 0, width, height)
+                        return@ImageGetter d
+                    }
+                }
+            } catch (e: Exception) { e.printStackTrace() }
+            null
+        }
+
+        val spannedContent = HtmlCompat.fromHtml(note.content, HtmlCompat.FROM_HTML_MODE_LEGACY, imageGetter, null)
+        
+        val staticLayout = StaticLayout.Builder.obtain(spannedContent, 0, spannedContent.length, textPaint, contentWidth)
+            .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+            .setLineSpacing(0f, 1f)
+            .setIncludePad(false)
+            .build()
+
+        canvas.save()
+        canvas.translate(margin, y)
+        staticLayout.draw(canvas)
+        canvas.restore()
+
+        pdfDocument.finishPage(page)
+
+        try {
+            contentResolver.openOutputStream(uri)?.use { outputStream ->
+                pdfDocument.writeTo(outputStream)
+                Toast.makeText(this, "Đã xuất file PDF thành công", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: IOException) {
+            Toast.makeText(this, "Lỗi khi xuất file PDF", Toast.LENGTH_SHORT).show()
+        } finally {
+            pdfDocument.close()
+        }
+    }
+
+    private fun createTableDrawableForPdf(source: String, tableWidth: Int): Drawable? {
+        try {
+            val path = source.substringBefore("?mode=")
+            val file = File(path)
+            if (!file.exists()) return null
+            val jsonObject = JSONObject(file.readText())
+            val rows = jsonObject.getInt("rows")
+            val cols = jsonObject.getInt("cols")
+            val dataArray = jsonObject.getJSONArray("data")
+            
+            val paint = Paint().apply { color = Color.BLACK; strokeWidth = 1f; style = Paint.Style.STROKE }
+            val textPaint = Paint().apply { color = Color.BLACK; textSize = 12f; isAntiAlias = true }
+            
+            val cellHeight = 30
+            val height = rows * cellHeight
+            val cellWidth = tableWidth / cols
+            
+            val bitmap = Bitmap.createBitmap(tableWidth, height, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+            canvas.drawColor(Color.WHITE)
+            
+            for (r in 0 until rows) {
+                val rowArray = dataArray.getJSONArray(r)
+                for (c in 0 until cols) {
+                    val text = rowArray.getString(c)
+                    val left = c * cellWidth.toFloat()
+                    val top = r * cellHeight.toFloat()
+                    val right = left + cellWidth
+                    val bottom = top + cellHeight
+                    canvas.drawRect(left, top, right, bottom, paint)
+                    val textY = top + (cellHeight / 2) - ((textPaint.descent() + textPaint.ascent()) / 2)
+                    canvas.drawText(text, left + 5f, textY, textPaint)
+                }
+            }
+            val d = BitmapDrawable(resources, bitmap)
+            d.setBounds(0, 0, tableWidth, height)
+            return d
+        } catch (e: Exception) { return null }
     }
 
     private fun showVerifyPasswordToUnlock(note: Note) {
