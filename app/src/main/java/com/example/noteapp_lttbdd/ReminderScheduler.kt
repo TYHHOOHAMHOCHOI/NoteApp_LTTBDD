@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.widget.Toast
+import java.util.Calendar
 
 object ReminderScheduler {
 
@@ -99,5 +100,37 @@ object ReminderScheduler {
         )
 
         alarmManager.cancel(pendingIntent)
+    }
+
+    fun getNextRepeatTime(currentTime: Long, repeatType: String): Long {
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = currentTime
+        }
+
+        when (repeatType) {
+            "daily" -> calendar.add(Calendar.DAY_OF_YEAR, 1)
+            "weekly" -> calendar.add(Calendar.WEEK_OF_YEAR, 1)
+            else -> return 0L
+        }
+
+        return calendar.timeInMillis
+    }
+
+    fun getNextFutureRepeatTime(
+        currentTime: Long,
+        repeatType: String,
+        now: Long = System.currentTimeMillis()
+    ): Long {
+        var nextTime = currentTime
+
+        while (nextTime <= now) {
+            nextTime = getNextRepeatTime(nextTime, repeatType)
+
+            if (nextTime == 0L) {
+                return 0L
+            }
+        }
+
+        return nextTime
     }
 }

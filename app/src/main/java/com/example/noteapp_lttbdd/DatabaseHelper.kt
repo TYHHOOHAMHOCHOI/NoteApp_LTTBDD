@@ -373,9 +373,12 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
     fun getNotesByDate(startTime: Long, endTime: Long): List<Note> {
         val noteList = mutableListOf<Note>()
-        val selectQuery = "SELECT * FROM $TABLE_NOTES WHERE $COLUMN_IS_DELETED = 0 AND $COLUMN_CREATED_AT >= ? AND $COLUMN_CREATED_AT <= ?"
         val db = this.readableDatabase
-        val cursor = db.rawQuery(selectQuery, arrayOf(startTime.toString(), endTime.toString()))
+
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLE_NOTES WHERE $COLUMN_IS_DELETED = 0 AND $COLUMN_CREATED_AT >= ? AND $COLUMN_CREATED_AT <= ?",
+            arrayOf(startTime.toString(), endTime.toString())
+        )
 
         if (cursor.moveToFirst()) {
             do {
@@ -408,8 +411,59 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 )
             } while (cursor.moveToNext())
         }
+
         cursor.close()
         db.close()
         return noteList
+    }
+
+    fun getEnabledReminderNotes(): List<Note> {
+        val notes = mutableListOf<Note>()
+        val db = this.readableDatabase
+
+        val cursor = db.query(
+            TABLE_NOTES,
+            null,
+            "$COLUMN_IS_REMINDER_ENABLED=? AND $COLUMN_REMINDER_TIME>?",
+            arrayOf("1", "0"),
+            null,
+            null,
+            null
+        )
+
+        cursor.use {
+            while (it.moveToNext()) {
+                val id = it.getLong(it.getColumnIndexOrThrow(COLUMN_ID))
+                val title = it.getString(it.getColumnIndexOrThrow(COLUMN_TITLE))
+                val content = it.getString(it.getColumnIndexOrThrow(COLUMN_CONTENT))
+                val isLocked = it.getInt(it.getColumnIndexOrThrow(COLUMN_IS_LOCKED)) == 1
+                val isPinned = it.getInt(it.getColumnIndexOrThrow(COLUMN_IS_PINNED)) == 1
+                val reminderTime = it.getLong(it.getColumnIndexOrThrow(COLUMN_REMINDER_TIME))
+                val isReminderEnabled = it.getInt(it.getColumnIndexOrThrow(COLUMN_IS_REMINDER_ENABLED)) == 1
+                val repeatType = it.getString(it.getColumnIndexOrThrow(COLUMN_REPEAT_TYPE)) ?: "once"
+                val tag = it.getString(it.getColumnIndexOrThrow(COLUMN_TAG)) ?: ""
+                val isDeleted = it.getInt(it.getColumnIndexOrThrow(COLUMN_IS_DELETED)) == 1
+                val createdAt = it.getLong(it.getColumnIndexOrThrow(COLUMN_CREATED_AT))
+
+                notes.add(
+                    Note(
+                        id = id,
+                        title = title,
+                        content = content,
+                        isLocked = isLocked,
+                        isPinned = isPinned,
+                        reminderTime = reminderTime,
+                        isReminderEnabled = isReminderEnabled,
+                        repeatType = repeatType,
+                        tag = tag,
+                        isDeleted = isDeleted,
+                        createdAt = createdAt
+                    )
+                )
+            }
+        }
+
+        db.close()
+        return notes
     }
 }

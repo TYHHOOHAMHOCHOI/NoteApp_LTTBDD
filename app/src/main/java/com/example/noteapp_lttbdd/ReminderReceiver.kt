@@ -33,6 +33,60 @@ class ReminderReceiver : BroadcastReceiver() {
             return
         }
 
-        NotificationHelper.showReminderNotification(context, note)
+        handleReminderTrigger(context, databaseHelper, note)
+    }
+
+    private fun handleReminderTrigger(
+        context: Context,
+        databaseHelper: DatabaseHelper,
+        note: Note
+    ) {
+        when (note.repeatType) {
+            "daily", "weekly" -> {
+                val nextTime = ReminderScheduler.getNextRepeatTime(
+                    currentTime = note.reminderTime,
+                    repeatType = note.repeatType
+                )
+
+                if (nextTime > 0L) {
+                    databaseHelper.updateReminder(
+                        note.id,
+                        nextTime,
+                        note.repeatType
+                    )
+
+                    ReminderScheduler.scheduleReminder(
+                        context = context,
+                        noteId = note.id,
+                        reminderTime = nextTime
+                    )
+
+                    val updatedNoteForClick = note.copy(
+                        reminderTime = nextTime,
+                        isReminderEnabled = true
+                    )
+
+                    NotificationHelper.showReminderNotification(
+                        context,
+                        updatedNoteForClick
+                    )
+                }
+            }
+
+            else -> {
+                databaseHelper.clearReminder(note.id)
+
+                val updatedNoteForClick = note.copy(
+                    reminderTime = 0L,
+                    isReminderEnabled = false,
+                    repeatType = "once"
+                )
+
+                NotificationHelper.showReminderNotification(
+                    context,
+                    updatedNoteForClick
+                )
+            }
+        }
     }
 }

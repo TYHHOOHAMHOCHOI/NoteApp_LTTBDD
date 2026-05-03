@@ -12,7 +12,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
-
+import androidx.core.app.TaskStackBuilder
 object NotificationHelper {
 
     private const val CHANNEL_ID = "note_reminder_channel"
@@ -33,14 +33,7 @@ object NotificationHelper {
             }
         }
 
-        val clickIntent = createClickIntent(context, note)
-
-        val clickPendingIntent = PendingIntent.getActivity(
-            context,
-            note.id.toInt(),
-            clickIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val clickPendingIntent = createClickPendingIntent(context, note)
 
         val title = if (note.isLocked) {
             "Ghi chú được bảo vệ"
@@ -89,22 +82,42 @@ object NotificationHelper {
         }
     }
 
-    private fun createClickIntent(context: Context, note: Note): Intent {
-        return if (note.isLocked) {
-            Intent(context, MainActivity::class.java).apply {
+    private fun createClickPendingIntent(context: Context, note: Note): PendingIntent {
+        if (note.isLocked) {
+            val mainIntent = Intent(context, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
-        } else {
-            Intent(context, AddNoteActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-
+                putExtra("EXTRA_FROM_REMINDER", true)
                 putExtra("EXTRA_NOTE_ID", note.id)
-                putExtra("EXTRA_NOTE_TITLE", note.title)
-                putExtra("EXTRA_NOTE_CONTENT", note.content)
-                putExtra("EXTRA_REMINDER_TIME", note.reminderTime)
-                putExtra("EXTRA_IS_REMINDER_ENABLED", note.isReminderEnabled)
-                putExtra("EXTRA_REPEAT_TYPE", note.repeatType)
             }
+
+            return PendingIntent.getActivity(
+                context,
+                note.id.toInt(),
+                mainIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        }
+
+        val mainIntent = Intent(context, MainActivity::class.java)
+
+        val noteIntent = Intent(context, AddNoteActivity::class.java).apply {
+            putExtra("EXTRA_NOTE_ID", note.id)
+            putExtra("EXTRA_NOTE_TITLE", note.title)
+            putExtra("EXTRA_NOTE_CONTENT", note.content)
+
+            putExtra("EXTRA_REMINDER_TIME", note.reminderTime)
+            putExtra("EXTRA_IS_REMINDER_ENABLED", note.isReminderEnabled)
+            putExtra("EXTRA_REPEAT_TYPE", note.repeatType)
+        }
+
+        return TaskStackBuilder.create(context).run {
+            addNextIntent(mainIntent)
+            addNextIntent(noteIntent)
+
+            getPendingIntent(
+                note.id.toInt(),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )!!
         }
     }
 
