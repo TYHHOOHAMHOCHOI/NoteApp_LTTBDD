@@ -17,6 +17,11 @@ class RecentlyDeletedActivity : AppCompatActivity() {
     private lateinit var deletedAdapter: DeletedNoteAdapter
     private lateinit var databaseHelper: DatabaseHelper
 
+    override fun attachBaseContext(newBase: android.content.Context) {
+        val lang = LocaleHelper.getLanguage(newBase)
+        super.attachBaseContext(LocaleHelper.setLocale(newBase, lang))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recently_deleted)

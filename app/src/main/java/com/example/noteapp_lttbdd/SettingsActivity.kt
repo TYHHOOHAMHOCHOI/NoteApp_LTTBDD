@@ -16,6 +16,7 @@ import androidx.core.view.WindowInsetsCompat
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var switchDarkMode: SwitchCompat
+    private lateinit var tvCurrentLanguage: TextView
     private lateinit var pref: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,6 +34,9 @@ class SettingsActivity : AppCompatActivity() {
 
         val btnBack = findViewById<ImageButton>(R.id.btnBack)
         switchDarkMode = findViewById(R.id.switchDarkMode)
+        tvCurrentLanguage = findViewById(R.id.tvCurrentLanguage)
+
+        updateLanguageText()
 
         // 🔙 Back
         btnBack.setOnClickListener { finish() }
@@ -81,8 +85,44 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         findViewById<View>(R.id.itemLanguage).setOnClickListener {
-            Toast.makeText(this, "Ngôn ngữ - Tiếng Việt", Toast.LENGTH_SHORT).show()
+            showLanguageDialog()
         }
+    }
+
+    private fun updateLanguageText() {
+        val lang = LocaleHelper.getLanguage(this)
+        tvCurrentLanguage.text = if (lang == "vi") getString(R.string.vietnamese) else getString(R.string.english)
+    }
+
+    private fun showLanguageDialog() {
+        val languages = arrayOf(getString(R.string.vietnamese), getString(R.string.english))
+        val languageCodes = arrayOf("vi", "en")
+        
+        val currentLang = LocaleHelper.getLanguage(this)
+        val checkedItem = languageCodes.indexOf(currentLang)
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.select_language)
+            .setSingleChoiceItems(languages, checkedItem) { dialog, which ->
+                val selectedLang = languageCodes[which]
+                if (selectedLang != currentLang) {
+                    LocaleHelper.setLocale(this, selectedLang)
+                    
+                    // Restart app to apply language globally
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    startActivity(intent)
+                    finish()
+                }
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    override fun attachBaseContext(newBase: android.content.Context) {
+        val lang = LocaleHelper.getLanguage(newBase)
+        super.attachBaseContext(LocaleHelper.setLocale(newBase, lang))
     }
 
     private fun showVerifyPasswordDialog() {
