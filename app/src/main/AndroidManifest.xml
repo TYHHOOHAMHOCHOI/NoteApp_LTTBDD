@@ -30,6 +30,7 @@
         <activity android:name=".ProfileActivity"/>
         <activity android:name=".LockNotesActivity"/>
         <activity android:name=".BackupActivity"/>
+        <activity android:name=".RecentlyDeletedActivity"/>
         <receiver
             android:name=".ReminderReceiver"
             android:exported="false" />

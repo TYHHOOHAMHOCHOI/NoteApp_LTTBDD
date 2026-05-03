@@ -9,7 +9,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "notes_db"
-        private const val DATABASE_VERSION = 6
+        private const val DATABASE_VERSION = 7
         private const val TABLE_NOTES = "notes"
 
         private const val COLUMN_ID = "id"
@@ -21,6 +21,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         private const val COLUMN_IS_REMINDER_ENABLED = "is_reminder_enabled"
         private const val COLUMN_REPEAT_TYPE = "repeat_type"
         private const val COLUMN_TAG = "tag"               // Tên cột lưu thẻ (tag)
+        private const val COLUMN_IS_DELETED = "is_deleted"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -33,7 +34,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 + "$COLUMN_REMINDER_TIME INTEGER DEFAULT 0,"
                 + "$COLUMN_IS_REMINDER_ENABLED INTEGER DEFAULT 0,"
                 + "$COLUMN_REPEAT_TYPE TEXT DEFAULT 'once',"
-                + "$COLUMN_TAG TEXT DEFAULT '')")
+                + "$COLUMN_TAG TEXT DEFAULT '',"
+                + "$COLUMN_IS_DELETED INTEGER DEFAULT 0)")
         db.execSQL(createTableQuery)
     }
 
@@ -50,6 +52,10 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         if (oldVersion < 6) {
             ensureColumnExists(db, COLUMN_TAG, "$COLUMN_TAG TEXT DEFAULT ''")
         }
+        // Version 7: thêm cột is_deleted
+        if (oldVersion < 7) {
+            ensureColumnExists(db, COLUMN_IS_DELETED, "$COLUMN_IS_DELETED INTEGER DEFAULT 0")
+        }
     }
 
     override fun onOpen(db: SQLiteDatabase) {
@@ -62,6 +68,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             ensureColumnExists(db, COLUMN_IS_REMINDER_ENABLED, "$COLUMN_IS_REMINDER_ENABLED INTEGER DEFAULT 0")
             ensureColumnExists(db, COLUMN_REPEAT_TYPE, "$COLUMN_REPEAT_TYPE TEXT DEFAULT 'once'")
             ensureColumnExists(db, COLUMN_TAG, "$COLUMN_TAG TEXT DEFAULT ''")
+            ensureColumnExists(db, COLUMN_IS_DELETED, "$COLUMN_IS_DELETED INTEGER DEFAULT 0")
         }
     }
 
@@ -96,6 +103,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             put(COLUMN_IS_REMINDER_ENABLED, 0)
             put(COLUMN_REPEAT_TYPE, "once")
             put(COLUMN_TAG, tag)          // Lưu tag vào database
+            put(COLUMN_IS_DELETED, 0)
         }
         val id = db.insert(TABLE_NOTES, null, contentValues)
         db.close()
@@ -185,7 +193,27 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return success
     }
 
-    fun deleteNote(id: Long): Int {
+    fun softDeleteNote(id: Long): Int {
+        val db = this.writableDatabase
+        val contentValues = ContentValues().apply {
+            put(COLUMN_IS_DELETED, 1)
+        }
+        val success = db.update(TABLE_NOTES, contentValues, "$COLUMN_ID=?", arrayOf(id.toString()))
+        db.close()
+        return success
+    }
+
+    fun restoreNote(id: Long): Int {
+        val db = this.writableDatabase
+        val contentValues = ContentValues().apply {
+            put(COLUMN_IS_DELETED, 0)
+        }
+        val success = db.update(TABLE_NOTES, contentValues, "$COLUMN_ID=?", arrayOf(id.toString()))
+        db.close()
+        return success
+    }
+
+    fun permanentlyDeleteNote(id: Long): Int {
         val db = this.writableDatabase
         val success = db.delete(TABLE_NOTES, "$COLUMN_ID=?", arrayOf(id.toString()))
         db.close()
@@ -195,7 +223,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     fun getAllNotes(): List<Note> {
         val noteList = mutableListOf<Note>()
         // Sắp xếp ưu tiên hiển thị mục ghim (is_pinned DESC) trước rồi mới theo ID giảm dần
-        val selectQuery = "SELECT * FROM $TABLE_NOTES ORDER BY $COLUMN_IS_PINNED DESC, $COLUMN_ID DESC"
+        val selectQuery = "SELECT * FROM $TABLE_NOTES WHERE $COLUMN_IS_DELETED = 0 " +
+                "ORDER BY $COLUMN_IS_PINNED DESC, $COLUMN_ID DESC"
         val db = this.readableDatabase
         val cursor = db.rawQuery(selectQuery, null)
 
@@ -224,6 +253,47 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                         isReminderEnabled = isReminderEnabled,
                         repeatType = repeatType,
                         tag = tag             // Gán tag cho ghi chú
+                    )
+                )
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        db.close()
+        return noteList
+    }
+
+    fun getDeletedNotes(): List<Note> {
+        val noteList = mutableListOf<Note>()
+        val selectQuery = "SELECT * FROM $TABLE_NOTES WHERE $COLUMN_IS_DELETED = 1 " +
+                "ORDER BY $COLUMN_ID DESC"
+
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(selectQuery, null)
+
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_ID))
+                val title = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE))
+                val content = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONTENT))
+                val isLocked = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IS_LOCKED)) == 1
+                val isPinned = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IS_PINNED)) == 1
+                val reminderTime = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_REMINDER_TIME))
+                val isReminderEnabled = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IS_REMINDER_ENABLED)) == 1
+                val repeatType = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_REPEAT_TYPE)) ?: "once"
+                val tagIndex = cursor.getColumnIndex(COLUMN_TAG)
+                val tag = if (tagIndex != -1) cursor.getString(tagIndex) ?: "" else ""
+
+                noteList.add(
+                    Note(
+                        id = id,
+                        title = title,
+                        content = content,
+                        isLocked = isLocked,
+                        isPinned = isPinned,
+                        reminderTime = reminderTime,
+                        isReminderEnabled = isReminderEnabled,
+                        repeatType = repeatType,
+                        tag = tag
                     )
                 )
             } while (cursor.moveToNext())

@@ -82,6 +82,11 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(Intent(this, BackupActivity::class.java))
         }
 
+        val itemRecentlyDeleted = findViewById<View>(R.id.itemTrash)
+        itemRecentlyDeleted.setOnClickListener {
+            startActivity(Intent(this, RecentlyDeletedActivity::class.java))
+        }
+
         setupBottomNavigation()
     }
 
