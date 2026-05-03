@@ -381,9 +381,13 @@ class AddNoteActivity : AppCompatActivity() {
         val currentSize = if (activeSizeSpans.isNotEmpty()) activeSizeSpans.last().size else 14
 
         val panel = findViewById<View>(R.id.panelTextSetting)
-        panel.findViewById<View>(R.id.btnFormatBold)?.setBackgroundColor(if (isBold) android.graphics.Color.parseColor("#E0E0E0") else android.graphics.Color.TRANSPARENT)
-        panel.findViewById<View>(R.id.btnFormatItalic)?.setBackgroundColor(if (isItalic) android.graphics.Color.parseColor("#E0E0E0") else android.graphics.Color.TRANSPARENT)
-        panel.findViewById<View>(R.id.btnFormatUnderline)?.setBackgroundColor(if (isUnderline) android.graphics.Color.parseColor("#E0E0E0") else android.graphics.Color.TRANSPARENT)
+        val selectedColor = ContextCompat.getColor(this, R.color.stroke_light)
+        val normalColor = android.graphics.Color.TRANSPARENT
+        val boxNormalColor = ContextCompat.getColor(this, R.color.bg_color)
+
+        panel.findViewById<View>(R.id.btnFormatBold)?.setBackgroundColor(if (isBold) selectedColor else normalColor)
+        panel.findViewById<View>(R.id.btnFormatItalic)?.setBackgroundColor(if (isItalic) selectedColor else normalColor)
+        panel.findViewById<View>(R.id.btnFormatUnderline)?.setBackgroundColor(if (isUnderline) selectedColor else normalColor)
 
         val sizeContainer = panel.findViewById<ViewGroup>(R.id.llTextSizeContainer)
         if (sizeContainer != null) {
@@ -393,9 +397,9 @@ class AddNoteActivity : AppCompatActivity() {
                     val sizeStr = child.tag?.toString()
                     val size = sizeStr?.toIntOrNull() ?: 14
                     if (size == currentSize) {
-                        child.setBackgroundColor(android.graphics.Color.parseColor("#E0E0E0"))
+                        child.setBackgroundColor(selectedColor)
                     } else {
-                        child.setBackgroundColor(android.graphics.Color.parseColor("#F0F0F0"))
+                        child.setBackgroundColor(boxNormalColor)
                     }
                 }
             }
@@ -1013,12 +1017,12 @@ class AddNoteActivity : AppCompatActivity() {
         val dataArray = jsonObject.getJSONArray("data")
         
         val paint = Paint().apply {
-            color = Color.BLACK
+            color = ContextCompat.getColor(this@AddNoteActivity, R.color.text_primary)
             strokeWidth = 2f
             style = Paint.Style.STROKE
         }
         val textPaint = Paint().apply {
-            color = Color.BLACK
+            color = ContextCompat.getColor(this@AddNoteActivity, R.color.text_primary)
             textSize = 30f
             isAntiAlias = true
         }
@@ -1030,7 +1034,7 @@ class AddNoteActivity : AppCompatActivity() {
         
         val bitmap = Bitmap.createBitmap(screenWidth, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        canvas.drawColor(Color.WHITE)
+        canvas.drawColor(ContextCompat.getColor(this@AddNoteActivity, R.color.card_color))
         
         val startX = (screenWidth - tableWidth) / 2f
         

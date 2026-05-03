@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
+    android:background="@color/card_color"
     android:fitsSystemWindows="true">
 
     <LinearLayout
@@ -32,7 +33,9 @@
                     android:paddingTop="24dp"
                     android:paddingBottom="4dp"
                     android:textSize="24sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_secondary" />
 
                 <!-- Ô nhập tag cho ghi chú -->
                 <EditText
@@ -48,8 +51,8 @@
                     android:paddingTop="4dp"
                     android:paddingBottom="4dp"
                     android:textSize="13sp"
-                    android:textColor="#9E9E9E"
-                    android:textColorHint="#BDBDBD" />
+                    android:textColor="@color/text_secondary"
+                    android:textColorHint="@color/text_secondary" />
 
                 <TextView
                     android:id="@+id/tvCharCount"
@@ -58,7 +61,7 @@
                     android:paddingHorizontal="16dp"
                     android:paddingBottom="16dp"
                     android:text="0 ký tự"
-                    android:textColor="#9E9E9E"
+                    android:textColor="@color/text_secondary"
                     android:textSize="10sp" />
 
                 <TextView
@@ -84,7 +87,9 @@
                     android:paddingHorizontal="0dp"
                     android:paddingTop="0dp"
                     android:paddingBottom="40dp"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_secondary" />
             </LinearLayout>
         </ScrollView>
 
@@ -92,7 +97,7 @@
             android:id="@+id/llRecordBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#E0E0E0"
+            android:background="@color/stroke_light"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="12dp"
@@ -104,7 +109,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Nhấn Play để ghi âm..."
-                android:textColor="#212121"
+                android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -114,7 +119,7 @@
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_autoplay"
-                android:tint="#212121" />
+                app:tint="@color/text_primary" />
 
             <ImageButton
                 android:id="@+id/btnStopRecord"
@@ -123,8 +128,8 @@
                 android:layout_marginStart="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_autostop"
-                android:tint="#212121" />
-                
+                app:tint="@color/text_primary" />
+
             <ImageButton
                 android:id="@+id/btnCloseRecord"
                 android:layout_width="48dp"
@@ -132,13 +137,13 @@
                 android:layout_marginStart="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
-                android:tint="#212121" />
+                app:tint="@color/text_primary" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="64dp"
-            android:background="#F5F5F5"
+            android:background="@color/bg_color"
             android:gravity="center"
             android:orientation="horizontal"
             android:paddingHorizontal="16dp">
@@ -152,7 +157,7 @@
                 android:contentDescription="Add in note"
                 android:padding="14dp"
                 android:src="@drawable/ic_add_in_note"
-                android:tint="#212121" />
+                app:tint="@color/text_primary" />
 
             <ImageButton
                 android:id="@+id/btnAlign"
@@ -163,7 +168,7 @@
                 android:contentDescription="Align options"
                 android:padding="14dp"
                 android:src="@drawable/ic_align"
-                android:tint="#212121" />
+                app:tint="@color/text_primary" />
 
             <ImageButton
                 android:id="@+id/btnTextSetting"
@@ -174,7 +179,7 @@
                 android:contentDescription="Text settings"
                 android:padding="14dp"
                 android:src="@drawable/ic_text_setting"
-                android:tint="#212121" />
+                app:tint="@color/text_primary" />
         </LinearLayout>
 
         <FrameLayout
@@ -207,24 +212,24 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
-        android:background="#FFFFFF"
+        android:background="@color/card_color"
         android:elevation="10dp">
-        
+
         <com.example.noteapp_lttbdd.DrawingView
             android:id="@+id/drawingView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@+id/llDrawingControls" />
-            
+
         <LinearLayout
             android:id="@+id/llDrawingControls"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:orientation="horizontal"
-            android:background="#E0E0E0"
+            android:background="@color/stroke_light"
             android:padding="12dp">
-            
+
             <Button
                 android:id="@+id/btnDrawingClose"
                 android:layout_width="0dp"
@@ -232,7 +237,7 @@
                 android:layout_weight="1"
                 android:text="Đóng"
                 android:backgroundTint="#9E9E9E" />
-                
+
             <Button
                 android:id="@+id/btnDrawingClear"
                 android:layout_width="0dp"
@@ -241,7 +246,7 @@
                 android:layout_marginStart="8dp"
                 android:text="Xóa"
                 android:backgroundTint="#F44336" />
-                
+
             <Button
                 android:id="@+id/btnDrawingDone"
                 android:layout_width="0dp"

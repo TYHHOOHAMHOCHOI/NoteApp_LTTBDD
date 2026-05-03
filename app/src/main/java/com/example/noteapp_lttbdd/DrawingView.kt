@@ -17,7 +17,7 @@ class DrawingView @JvmOverloads constructor(
 
     private var path = Path()
     private val paint = Paint().apply {
-        color = Color.BLACK
+        color = context.getColor(R.color.text_primary)
         isAntiAlias = true
         strokeWidth = 8f
         style = Paint.Style.STROKE
@@ -43,12 +43,12 @@ class DrawingView @JvmOverloads constructor(
     fun setBlankCanvas() {
         initialBitmap = null
         path.reset()
-        mCanvas?.drawColor(Color.WHITE)
+        mCanvas?.drawColor(context.getColor(R.color.card_color))
         invalidate()
     }
 
     private fun drawInitialBitmap() {
-        mCanvas?.drawColor(Color.WHITE)
+        mCanvas?.drawColor(context.getColor(R.color.card_color))
         initialBitmap?.let {
             val matrix = Matrix()
             val scale = Math.min(width.toFloat() / it.width, height.toFloat() / it.height)
@@ -68,7 +68,7 @@ class DrawingView @JvmOverloads constructor(
             if (initialBitmap != null) {
                 drawInitialBitmap()
             } else {
-                mCanvas?.drawColor(Color.WHITE)
+                mCanvas?.drawColor(context.getColor(R.color.card_color))
             }
         }
     }
@@ -120,7 +120,7 @@ class DrawingView @JvmOverloads constructor(
         if (initialBitmap != null) {
             drawInitialBitmap()
         } else {
-            mCanvas?.drawColor(Color.WHITE)
+            mCanvas?.drawColor(context.getColor(R.color.card_color))
         }
         invalidate()
     }
