@@ -61,17 +61,6 @@ class SettingsActivity : AppCompatActivity() {
                     AppCompatDelegate.MODE_NIGHT_NO
             )
         }
-
-        // Setup other items
-        findViewById<View>(R.id.itemTheme).setOnClickListener {
-            Toast.makeText(this, "Chủ đề - Sắp ra mắt", Toast.LENGTH_SHORT).show()
-        }
-        findViewById<View>(R.id.itemAutoSave).setOnClickListener {
-            Toast.makeText(this, "Tự động lưu - Đã bật", Toast.LENGTH_SHORT).show()
-        }
-        findViewById<View>(R.id.itemAppLock).setOnClickListener {
-            Toast.makeText(this, "Khóa ứng dụng - Sắp ra mắt", Toast.LENGTH_SHORT).show()
-        }
         
         // 🔥 Navigate to LockNotesActivity
         findViewById<View>(R.id.itemNoteLock).setOnClickListener {

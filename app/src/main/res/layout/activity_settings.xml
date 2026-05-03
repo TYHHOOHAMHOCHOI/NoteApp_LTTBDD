@@ -87,33 +87,6 @@
                             android:clickable="false"
                             android:focusable="false" />
                     </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginHorizontal="16dp"
-                        android:background="#1F000000" />
-
-                    <!-- Theme Item -->
-                    <LinearLayout
-                        android:id="@+id/itemTheme"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="16dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/theme"
-                            android:textColor="@color/text_primary"
-                            android:textSize="16sp" />
-                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -131,60 +104,6 @@
                     android:layout_height="wrap_content"
                     android:background="@color/card_color"
                     android:orientation="vertical">
-
-                    <!-- Auto Save Item -->
-                    <LinearLayout
-                        android:id="@+id/itemAutoSave"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="16dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/auto_save"
-                            android:textColor="@color/text_primary"
-                            android:textSize="16sp" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginHorizontal="16dp"
-                        android:background="#1F000000" />
-
-                    <!-- App Lock Item -->
-                    <LinearLayout
-                        android:id="@+id/itemAppLock"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="16dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/app_lock"
-                            android:textColor="@color/text_primary"
-                            android:textSize="16sp" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginHorizontal="16dp"
-                        android:background="#1F000000" />
 
                     <!-- Note Lock Item -->
                     <LinearLayout

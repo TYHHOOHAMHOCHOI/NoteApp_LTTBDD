@@ -35,68 +35,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Profile Info Section -->
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal">
-
-                <com.google.android.material.imageview.ShapeableImageView
-                    android:id="@+id/ivAvatar"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:padding="2dp"
-                    android:src="@android:drawable/ic_menu_gallery"
-                    android:scaleType="centerCrop"
-                    app:shapeAppearanceOverlay="@style/CircleAppearance"
-                    app:strokeColor="@color/primary"
-                    app:strokeWidth="2dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:background="?attr/selectableItemBackgroundBorderless"/>
-
-                <ImageView
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:layout_gravity="bottom|end"
-                    android:layout_marginEnd="4dp"
-                    android:layout_marginBottom="4dp"
-                    android:background="@drawable/bg_circle_edit"
-                    android:padding="6dp"
-                    android:src="@android:drawable/ic_menu_camera"
-                    app:tint="@android:color/white" />
-            </FrameLayout>
-
-            <LinearLayout
-                android:id="@+id/layoutUsername"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="12dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="?attr/selectableItemBackground"
-                android:padding="4dp">
-
-                <TextView
-                    android:id="@+id/tvUsername"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="User Name"
-                    android:textColor="@color/text_primary"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:layout_marginStart="8dp"
-                    android:src="@android:drawable/ic_menu_edit"
-                    app:tint="@color/text_secondary" />
-            </LinearLayout>
-
             <!-- Group Card 1 -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -176,33 +114,6 @@
                     android:layout_height="wrap_content"
                     android:background="@color/card_color"
                     android:orientation="vertical">
-
-                    <!-- Stats Item -->
-                    <LinearLayout
-                        android:id="@+id/itemStats"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="16dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/usage_stats"
-                            android:textColor="@color/text_primary"
-                            android:textSize="16sp" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginHorizontal="16dp"
-                        android:background="#1F000000" />
 
                     <!-- Trash Item -->
                     <LinearLayout
