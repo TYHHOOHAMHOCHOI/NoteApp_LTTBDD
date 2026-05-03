@@ -11,4 +11,10 @@
     <!-- Primary (màu chính app) -->
     <color name="primary">#6750A4</color>
     <color name="on_primary">#FFFFFF</color>
+
+    <!-- Weekend -->
+    <color name="weekend">#FF5252</color>
+
+    <!-- Stroke -->
+    <color name="stroke_light">#E0E0E0</color>
 </resources>

@@ -3,25 +3,25 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/calendar_main"
-    android:orientation="vertical"
-    android:padding="12dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
     android:background="@color/bg_color">
 
-    <!-- HEADER -->
+    <!-- Header tháng -->
     <LinearLayout
-        android:orientation="horizontal"
-        android:gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
 
         <ImageButton
             android:id="@+id/btnPrev"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@android:drawable/ic_media_previous"
-            android:background="@null"
+            android:background="?attr/selectableItemBackgroundBorderless"
             app:tint="@color/text_primary"
             android:contentDescription="Tháng trước" />
 
@@ -29,49 +29,46 @@
             android:id="@+id/txtMonthYear"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="June 2026"
-            android:textSize="18sp"
-            android:textStyle="bold"
+            android:layout_marginHorizontal="16dp"
+            android:text="tháng 6 năm 2026"
             android:textColor="@color/text_primary"
-            android:layout_marginHorizontal="16dp"/>
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
         <ImageButton
             android:id="@+id/btnNext"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@android:drawable/ic_media_next"
-            android:background="@null"
+            android:background="?attr/selectableItemBackgroundBorderless"
             app:tint="@color/text_primary"
             android:contentDescription="Tháng sau" />
-
     </LinearLayout>
 
-    <!-- HEADER WEEK -->
+    <!-- Header ngày trong tuần (Bắt đầu từ Thứ 2) -->
     <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:orientation="horizontal"
-        android:weightSum="7"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:weightSum="7">
 
-        <TextView android:text="CN" style="@style/dayHeader" android:textColor="@color/text_secondary"/>
-        <TextView android:text="T2" style="@style/dayHeader" android:textColor="@color/text_secondary"/>
-        <TextView android:text="T3" style="@style/dayHeader" android:textColor="@color/text_secondary"/>
-        <TextView android:text="T4" style="@style/dayHeader" android:textColor="@color/text_secondary"/>
-        <TextView android:text="T5" style="@style/dayHeader" android:textColor="@color/text_secondary"/>
-        <TextView android:text="T6" style="@style/dayHeader" android:textColor="@color/text_secondary"/>
-        <TextView android:text="T7" style="@style/dayHeader" android:textColor="@color/text_secondary"/>
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T2" android:textColor="@color/text_secondary" android:textStyle="bold" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T3" android:textColor="@color/text_secondary" android:textStyle="bold" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T4" android:textColor="@color/text_secondary" android:textStyle="bold" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T5" android:textColor="@color/text_secondary" android:textStyle="bold" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T6" android:textColor="@color/text_secondary" android:textStyle="bold" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T7" android:textColor="@color/text_secondary" android:textStyle="bold" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="CN" android:textColor="@color/text_secondary" android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- GRID -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerCalendar"
-        android:layout_marginTop="8dp"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_marginTop="8dp"
+        android:layout_weight="1" />
 
-    <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
@@ -80,5 +77,4 @@
         app:itemIconTint="@color/primary"
         app:itemTextColor="@color/primary"
         app:menu="@menu/bottom_nav_menu" />
-
 </LinearLayout>

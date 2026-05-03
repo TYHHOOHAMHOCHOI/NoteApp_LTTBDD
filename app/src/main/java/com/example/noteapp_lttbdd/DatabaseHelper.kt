@@ -417,6 +417,52 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return noteList
     }
 
+    fun getNotesByReminderRange(startTime: Long, endTime: Long): List<Note> {
+        val noteList = mutableListOf<Note>()
+        val db = this.readableDatabase
+
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLE_NOTES WHERE $COLUMN_IS_DELETED = 0 AND $COLUMN_IS_REMINDER_ENABLED = 1 AND $COLUMN_REMINDER_TIME >= ? AND $COLUMN_REMINDER_TIME <= ?",
+            arrayOf(startTime.toString(), endTime.toString())
+        )
+
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_ID))
+                val title = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE))
+                val content = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONTENT))
+                val isLocked = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IS_LOCKED)) == 1
+                val isPinned = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IS_PINNED)) == 1
+                val reminderTime = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_REMINDER_TIME))
+                val isReminderEnabled = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IS_REMINDER_ENABLED)) == 1
+                val repeatType = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_REPEAT_TYPE)) ?: "once"
+                val tag = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TAG)) ?: ""
+                val isDeleted = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IS_DELETED)) == 1
+                val createdAt = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT))
+
+                noteList.add(
+                    Note(
+                        id = id,
+                        title = title,
+                        content = content,
+                        isLocked = isLocked,
+                        isPinned = isPinned,
+                        reminderTime = reminderTime,
+                        isReminderEnabled = isReminderEnabled,
+                        repeatType = repeatType,
+                        tag = tag,
+                        isDeleted = isDeleted,
+                        createdAt = createdAt
+                    )
+                )
+            } while (cursor.moveToNext())
+        }
+
+        cursor.close()
+        db.close()
+        return noteList
+    }
+
     fun getEnabledReminderNotes(): List<Note> {
         val notes = mutableListOf<Note>()
         val db = this.readableDatabase

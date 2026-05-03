@@ -87,35 +87,37 @@ class CalendarActivity : AppCompatActivity() {
     }
 
     private fun loadCalendar() {
-        val sdf = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
-        txtMonthYear.text = sdf.format(calendar.time)
+        val sdf = SimpleDateFormat("MMMM yyyy", Locale("vi", "VN"))
+        txtMonthYear.text = "tháng ${calendar.get(Calendar.MONTH) + 1} năm ${calendar.get(Calendar.YEAR)}"
 
         val days = mutableListOf<CalendarDay>()
-
         val tempCal = calendar.clone() as Calendar
         tempCal.set(Calendar.DAY_OF_MONTH, 1)
         tempCal.set(Calendar.HOUR_OF_DAY, 0)
         tempCal.set(Calendar.MINUTE, 0)
         tempCal.set(Calendar.SECOND, 0)
         tempCal.set(Calendar.MILLISECOND, 0)
-        val monthStartTime = tempCal.timeInMillis
 
         val firstDayOfWeek = tempCal.get(Calendar.DAY_OF_WEEK)
+        val paddingDays = if (firstDayOfWeek == Calendar.SUNDAY) 6 else firstDayOfWeek - 2
         val maxDay = tempCal.getActualMaximum(Calendar.DAY_OF_MONTH)
 
-        tempCal.set(Calendar.DAY_OF_MONTH, maxDay)
-        tempCal.set(Calendar.HOUR_OF_DAY, 23)
-        tempCal.set(Calendar.MINUTE, 59)
-        tempCal.set(Calendar.SECOND, 59)
-        tempCal.set(Calendar.MILLISECOND, 999)
-        val monthEndTime = tempCal.timeInMillis
-
-        // Fetch all notes for the month once to improve performance
-        val notesInMonth = databaseHelper.getNotesByDate(monthStartTime, monthEndTime)
-
-        for (i in 1 until firstDayOfWeek) {
+        repeat(paddingDays) {
             days.add(CalendarDay(0, 0))
         }
+
+        val monthStart = tempCal.timeInMillis
+
+        val tempEnd = tempCal.clone() as Calendar
+        tempEnd.set(Calendar.DAY_OF_MONTH, maxDay)
+        tempEnd.set(Calendar.HOUR_OF_DAY, 23)
+        tempEnd.set(Calendar.MINUTE, 59)
+        tempEnd.set(Calendar.SECOND, 59)
+        tempEnd.set(Calendar.MILLISECOND, 999)
+        val monthEnd = tempEnd.timeInMillis
+
+        val notesInMonth = databaseHelper.getNotesByDate(monthStart, monthEnd)
+        val remindersInMonth = databaseHelper.getNotesByReminderRange(monthStart, monthEnd)
 
         for (i in 1..maxDay) {
             tempCal.set(Calendar.DAY_OF_MONTH, i)
@@ -123,18 +125,43 @@ class CalendarActivity : AppCompatActivity() {
             tempCal.set(Calendar.MINUTE, 0)
             tempCal.set(Calendar.SECOND, 0)
             tempCal.set(Calendar.MILLISECOND, 0)
-            val startTime = tempCal.timeInMillis
-            
+            val startOfDay = tempCal.timeInMillis
+
             tempCal.set(Calendar.HOUR_OF_DAY, 23)
             tempCal.set(Calendar.MINUTE, 59)
             tempCal.set(Calendar.SECOND, 59)
             tempCal.set(Calendar.MILLISECOND, 999)
-            val endTime = tempCal.timeInMillis
+            val endOfDay = tempCal.timeInMillis
 
-            val count = notesInMonth.count { it.createdAt in startTime..endTime }
-            days.add(CalendarDay(i, count))
+            val count = notesInMonth.count { it.createdAt in startOfDay..endOfDay }
+            val hasReminder = remindersInMonth.any { it.reminderTime in startOfDay..endOfDay }
+            days.add(CalendarDay(i, count, hasReminder))
         }
 
-        recyclerView.adapter = CalendarAdapter(days)
+        recyclerView.adapter = CalendarAdapter(days) { day ->
+            val intent = Intent(this, DayNotesActivity::class.java)
+
+            val dayCal = calendar.clone() as Calendar
+            dayCal.set(Calendar.DAY_OF_MONTH, day)
+            dayCal.set(Calendar.HOUR_OF_DAY, 0)
+            dayCal.set(Calendar.MINUTE, 0)
+            dayCal.set(Calendar.SECOND, 0)
+            dayCal.set(Calendar.MILLISECOND, 0)
+            val startTime = dayCal.timeInMillis
+
+            dayCal.set(Calendar.HOUR_OF_DAY, 23)
+            dayCal.set(Calendar.MINUTE, 59)
+            dayCal.set(Calendar.SECOND, 59)
+            dayCal.set(Calendar.MILLISECOND, 999)
+            val endTime = dayCal.timeInMillis
+
+            val sdfDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val dateStr = "Ghi chú ngày ${sdfDate.format(dayCal.time)}"
+
+            intent.putExtra("START_TIME", startTime)
+            intent.putExtra("END_TIME", endTime)
+            intent.putExtra("DATE_STRING", dateStr)
+            startActivity(intent)
+        }
     }
 }
