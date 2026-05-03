@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class NoteAdapter(
     private var noteList: List<Note>,
@@ -16,6 +18,7 @@ class NoteAdapter(
     class NoteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvNoteTitle: TextView = itemView.findViewById(R.id.tvNoteTitle)
         val tvNoteContent: TextView = itemView.findViewById(R.id.tvNoteContent)
+        val tvItemReminderInfo: TextView = itemView.findViewById(R.id.tvItemReminderInfo)
         val ivLockIcon: ImageView = itemView.findViewById(R.id.ivLockIcon)
         val ivPinIcon: ImageView = itemView.findViewById(R.id.ivPinIcon)   // Icon ghim
         val tvNoteTag: TextView = itemView.findViewById(R.id.tvNoteTag)    // Label hiển thị tag
@@ -45,6 +48,14 @@ class NoteAdapter(
             holder.ivPinIcon.visibility = View.GONE
         }
 
+        if (note.isReminderEnabled && note.reminderTime > 0L) {
+            holder.tvItemReminderInfo.visibility = View.VISIBLE
+            holder.tvItemReminderInfo.text =
+                "⏰ Nhắc lúc: ${formatReminderTime(note.reminderTime)} • ${getRepeatText(note.repeatType)}"
+        } else {
+            holder.tvItemReminderInfo.visibility = View.GONE
+        }
+
         // Hiện label tag nếu ghi chú có tag, ẩn đi nếu tag rỗng
         if (note.tag.isNotEmpty()) {
             holder.tvNoteTag.visibility = View.VISIBLE
@@ -71,4 +82,17 @@ class NoteAdapter(
         noteList = newList
         notifyDataSetChanged()
     }
+    private fun formatReminderTime(timeMillis: Long): String {
+        val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        return formatter.format(timeMillis)
+    }
+
+    private fun getRepeatText(repeatType: String): String {
+        return when (repeatType) {
+            "daily" -> "Hằng ngày"
+            "weekly" -> "Hằng tuần"
+            else -> "Không lặp"
+        }
+    }
+
 }
