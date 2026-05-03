@@ -10,5 +10,11 @@
 
     <!-- Primary -->
     <color name="primary">#D0BCFF</color>
-    <color name="on_primary">#000000</color>
+    <color name="on_primary">#381E72</color>
+
+    <!-- Weekend -->
+    <color name="weekend">#FF8989</color>
+
+    <!-- Stroke -->
+    <color name="stroke_light">#333333</color>
 </resources>
