@@ -151,9 +151,9 @@ class MainActivity : AppCompatActivity() {
             .setItems(options) { _, which ->
                 when (options[which]) {
                     "Xóa" -> {
-                        databaseHelper.deleteNote(note.id)
+                        databaseHelper.softDeleteNote(note.id)
                         loadNotes()
-                        Toast.makeText(this, "Đã xóa ghi chú", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Đã chuyển vào thùng rác", Toast.LENGTH_SHORT).show()
                     }
                     "Ghim ghi chú" -> {
                         databaseHelper.updatePinStatus(note.id, true) // Update trạng thái ghim xuống DB
